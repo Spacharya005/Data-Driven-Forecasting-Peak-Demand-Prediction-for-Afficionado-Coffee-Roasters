@@ -7,3 +7,4 @@ statsmodels
 joblib
 matplotlib
 seaborn
+prophet==1.1.5
