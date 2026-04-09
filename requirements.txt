@@ -5,3 +5,4 @@ statsmodels
 prophet
 matplotlib
 streamlit
+plotly
