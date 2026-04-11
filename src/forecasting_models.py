@@ -47,16 +47,32 @@ def gradient_boosting_model(X_train, y_train, X_test):
 # STATISTICAL MODELS
 # -------------------------------
 
-def arima_forecast(train, test, order=(5,1,0)):
+def arima_forecast(train, test):
 
-    train = train.copy()
-    train.index = pd.to_datetime(train.index)  # 🔥 FIX
+    try:
+        # ✅ Clean data
+        train = train.dropna()
 
-    model = ARIMA(train, order=order)
-    model_fit = model.fit()
+        # ✅ Safety checks
+        if len(train) < 10:
+            return [train.mean()] * len(test)
 
-    forecast = model_fit.forecast(steps=len(test))
-    return forecast.values  # ensure numpy output
+        if train.nunique() <= 1:
+            return [train.iloc[-1]] * len(test)
+
+        # ✅ Safer ARIMA config
+        model = ARIMA(train, order=(1,1,1))
+        model_fit = model.fit()
+
+        forecast = model_fit.forecast(steps=len(test))
+
+        return forecast
+
+    except Exception as e:
+        print("⚠️ ARIMA failed:", e)
+
+        # ✅ FALLBACK (VERY IMPORTANT)
+        return np.repeat(train.mean(), len(test))
 
 
 def exp_smoothing_forecast(train, test):
