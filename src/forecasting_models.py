@@ -95,20 +95,25 @@ def exp_smoothing_forecast(train, test):
 # PROPHET
 # -------------------------------
 
-def prophet_forecast(df, test_size):
+def prophet_forecast(df, periods):
 
-    prophet_df = df[['datetime', 'transaction_qty']]
+    prophet_df = df[['datetime', 'target']].copy()
     prophet_df.columns = ['ds', 'y']
 
-    train_df = prophet_df.iloc[:-test_size]  # use all but last test_size rows for training
-
     model = Prophet()
-    model.fit(train_df)
+    model.fit(prophet_df)
 
-    future = model.make_future_dataframe(periods=test_size, freq='D')
+    # 🔥 Detect frequency automatically
+    freq = pd.infer_freq(prophet_df['ds'])
+
+    if freq is None:
+        freq = 'D'  # fallback
+
+    future = model.make_future_dataframe(periods=periods, freq=freq)
+
     forecast = model.predict(future)
 
-    return forecast['yhat'][-test_size:].values
+    return forecast['yhat'][-periods:].values
 
 
 # -------------------------------
@@ -132,22 +137,60 @@ def moving_average_forecast(train, test, window=3):
 # MODEL SELECTOR
 # -------------------------------
 
-def run_model(train, test, model_name):
+def run_model(model_name, train, test=None, X_train=None, X_test=None, df=None, horizon=None):
 
     try:
-        if model_name == "ARIMA":
-            return arima_forecast(train, test)
-
-        elif model_name == "Naive":
+        # ----------------------
+        # BASELINE
+        # ----------------------
+        if model_name == "Naive":
             return naive_forecast(train, test)
 
-        elif model_name == "Gradient Boosting":
-            return np.repeat(train.mean(), len(test))
+        elif model_name == "Moving Average":
+            return moving_average_forecast(train, test)
 
+        # ----------------------
+        # STAT MODELS
+        # ----------------------
+        elif model_name == "ARIMA":
+            return arima_forecast(train, test)
+
+        elif model_name == "Exponential Smoothing":
+            return exp_smoothing_forecast(train, test)
+
+        # ----------------------
+        # PROPHET
+        # ----------------------
+        elif model_name == "Prophet":
+            if df is None:
+                raise ValueError("Prophet requires full dataframe (df)")
+            return prophet_forecast(df, len(test) if test is not None else horizon)
+
+        # ----------------------
+        # ML MODEL
+        # ----------------------
+        elif model_name == "Gradient Boosting":
+
+            # Future forecast case
+            if test is None:
+                return np.repeat(train.mean(), horizon)
+
+            if X_train is None or X_test is None:
+                raise ValueError("Gradient Boosting needs X_train and X_test")
+
+            return gradient_boosting_model(X_train, train.values, X_test)
+
+        # ----------------------
+        # DEFAULT
+        # ----------------------
         else:
             return np.repeat(train.mean(), len(test))
 
     except Exception as e:
-        print("⚠️ Model failed:", e)
-        return np.repeat(train.mean(), len(test))
+        print(f"⚠️ {model_name} failed:", e)
+
+        if test is not None:
+            return np.repeat(train.mean(), len(test))
+        else:
+            return np.repeat(train.mean(), horizon)
  

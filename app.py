@@ -145,7 +145,7 @@ selected_models = st.sidebar.multiselect(
     default=["Naive", "ARIMA", "Gradient Boosting"]
 )
 
-freq_map = {"Hourly": "H", "Daily": "D"}
+freq_map = {"Hourly": "h", "Daily": "D"}
 
 
 # -----------------------------
@@ -184,7 +184,6 @@ with st.spinner("☕ Brewing predictions... Please wait..."):
             test,
             X_train,
             X_test,
-            # df=feat_df
         )
         predictions[model] = preds
 
@@ -207,12 +206,13 @@ future_preds = run_model(
     horizon=horizon
 )
 
+freq_fixed = 'h' if freq_map[freq] == 'H' else 'D'
+
 future_index = pd.date_range(
     start=agg_df['datetime'].iloc[-1],
     periods=horizon + 1,
-    freq=freq_map[freq]
+    freq=freq_fixed
 )[1:]
-    
 
 # -----------------------------
 # TABS UI
@@ -385,6 +385,12 @@ with tab3:
     )
 
     if not pivot.empty:
+        fig.add_trace(go.Scatter(
+            x=future_index,
+            y=future_preds,
+            mode='lines+markers',
+            name='Future Forecast'
+        ))
         fig = px.imshow(
             pivot,
             text_auto=True,
@@ -405,6 +411,7 @@ with tab3:
                 tickfont=dict(color="white" if plotly_theme == "plotly_dark" else "black")
             )
         )
+
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.warning("Not enough data for heatmap")
