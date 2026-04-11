@@ -12,7 +12,7 @@ from src.forecasting_models import run_model
 from src.evaluation import evaluate_all
 from utility import detect_spikes
 
-
+# st.write("FILES IN ROOT:", os.listdir())
 # -----------------------------
 # PAGE CONFIG
 # -----------------------------
@@ -104,7 +104,9 @@ label {
 # -----------------------------
 # LOAD DATA
 # -----------------------------
-df = load_data("data/coffee_sales.csv")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(BASE_DIR, "data", "coffee_sales.csv")
+df = load_data(file_path)
 
 # -----------------------------
 # SIDEBAR
