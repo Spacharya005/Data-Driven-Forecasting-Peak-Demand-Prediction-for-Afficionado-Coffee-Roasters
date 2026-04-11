@@ -21,15 +21,15 @@ def naive_forecast(train, test):
     return np.repeat(last_value, len(test))
 
 
-def moving_average_forecast(train, test, window=3):
-    preds = []
-    history = list(train)
+# def moving_average_forecast(train, test, window=3):
+#     preds = []
+#     history = list(train)
 
-    for t in range(len(test)):
-        preds.append(np.mean(history[-window:]))
-        history.append(test.iloc[t])
+#     for t in range(len(test)):
+#         preds.append(np.mean(history[-window:]))
+#         history.append(test.iloc[t])
 
-    return np.array(preds)
+#     return np.array(preds)
 
 def gradient_boosting_model(X_train, y_train, X_test):
 
@@ -67,7 +67,7 @@ def arima_forecast(train, test):
 
         forecast = model_fit.forecast(steps=len(test))
 
-        return forecast
+        return np.array(forecast)
 
     except Exception as e:
         print("⚠️ ARIMA failed:", e)
@@ -142,7 +142,7 @@ def run_model(train, test, model_name):
             return naive_forecast(train, test)
 
         elif model_name == "Gradient Boosting":
-            return gb_forecast(train, test)
+            return np.repeat(train.mean(), len(test))
 
         else:
             return np.repeat(train.mean(), len(test))
