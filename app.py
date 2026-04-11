@@ -184,7 +184,7 @@ with st.spinner("☕ Brewing predictions... Please wait..."):
             test,
             X_train,
             X_test,
-            df=feat_df
+            # df=feat_df
         )
         predictions[model] = preds
 
