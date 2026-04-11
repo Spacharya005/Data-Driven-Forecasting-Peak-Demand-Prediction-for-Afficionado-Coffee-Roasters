@@ -47,22 +47,23 @@ def gradient_boosting_model(X_train, y_train, X_test):
 # STATISTICAL MODELS
 # -------------------------------
 
+from statsmodels.tsa.arima.model import ARIMA
+import numpy as np
+
 def arima_forecast(train, test):
 
+    # ✅ Always inside try
     try:
-        # ✅ Clean data
         train = train.dropna()
 
-        # ✅ Safety checks
         if len(train) < 10:
-            return [train.mean()] * len(test)
+            return np.repeat(train.mean(), len(test))
 
         if train.nunique() <= 1:
-            return [train.iloc[-1]] * len(test)
+            return np.repeat(train.iloc[-1], len(test))
 
-        # ✅ Safer ARIMA config
         model = ARIMA(train, order=(1,1,1))
-        model_fit = model.fit()
+        model_fit = model.fit()   # ✅ INSIDE try
 
         forecast = model_fit.forecast(steps=len(test))
 
@@ -71,7 +72,7 @@ def arima_forecast(train, test):
     except Exception as e:
         print("⚠️ ARIMA failed:", e)
 
-        # ✅ FALLBACK (VERY IMPORTANT)
+        # ✅ fallback
         return np.repeat(train.mean(), len(test))
 
 
@@ -131,31 +132,22 @@ def moving_average_forecast(train, test, window=3):
 # MODEL SELECTOR
 # -------------------------------
 
-def run_model(model_name, train, test, X_train=None, X_test=None, df=None, horizon=None):
-    if horizon is not None:
-        last_value = train.iloc[-1]
-        future_preds = np.repeat(last_value, horizon)
-        return future_preds
-    
-    if model_name == "Naive":
-        return naive_forecast(train, test)
+def run_model(train, test, model_name):
 
-    elif model_name == "Moving Average":
-        return moving_average_forecast(train, test)
+    try:
+        if model_name == "ARIMA":
+            return arima_forecast(train, test)
 
-    elif model_name == "ARIMA":
-        return arima_forecast(train, test)
+        elif model_name == "Naive":
+            return naive_forecast(train, test)
 
-    elif model_name == "Exponential Smoothing":
-        return exp_smoothing_forecast(train, test)
+        elif model_name == "Gradient Boosting":
+            return gb_forecast(train, test)
 
-    elif model_name == "Prophet":
-        return prophet_forecast(df, len(test))
+        else:
+            return np.repeat(train.mean(), len(test))
 
-    elif model_name == "Gradient Boosting":
-        return gradient_boosting_model(X_train, train, X_test)
-
-    else:
-        raise ValueError("Invalid Model")
-
+    except Exception as e:
+        print("⚠️ Model failed:", e)
+        return np.repeat(train.mean(), len(test))
  
