@@ -100,7 +100,8 @@ def prophet_forecast(df, periods):
     prophet_df = df[['datetime', 'target']].copy()
     prophet_df.columns = ['ds', 'y']
 
-    model = Prophet()
+    model = Prophet( daily_seasonality=True, 
+                    weekly_seasonality=True)
     model.fit(prophet_df)
 
     # 🔥 Detect frequency automatically

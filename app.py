@@ -256,6 +256,9 @@ with tab1:
     upper = preds + 1.96 * std
     lower = preds - 1.96 * std
 
+    best_case = future_preds * 0.9
+    worst_case = future_preds * 1.1
+
     fig.add_trace(go.Scatter(y=upper, line=dict(width=0), showlegend=False))
     fig.add_trace(go.Scatter(
         y=lower,

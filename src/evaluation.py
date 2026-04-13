@@ -20,3 +20,7 @@ def evaluate_all(y_true, predictions_dict):
         })
 
     return pd.DataFrame(results).sort_values("RMSE")
+
+def peak_error_rate(y_true, y_pred, threshold):
+    peak_mask = y_true > threshold
+    return np.mean(np.abs(y_true[peak_mask] - y_pred[peak_mask]))

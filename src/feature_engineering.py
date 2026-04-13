@@ -17,7 +17,8 @@ def create_features(df):
     # Rolling
     df['rolling_mean_3'] = df['transaction_qty'].rolling(3).mean()
     df['rolling_mean_7'] = df['transaction_qty'].rolling(7).mean()
-
+    df['hour'] = df['datetime'].dt.hour
+    df['dayofweek'] = df['datetime'].dt.dayofweek
     df = df.dropna()
 
     return df
