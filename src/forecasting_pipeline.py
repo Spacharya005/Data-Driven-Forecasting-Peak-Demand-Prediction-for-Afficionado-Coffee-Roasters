@@ -29,7 +29,10 @@ def aggregate_data(df, freq='D'):
         'transaction_qty': 'sum',
         'revenue': 'sum'
     }).reset_index()
+    df = df.set_index('datetime')
 
+    df = df.asfreq(freq, fill_value=0)  # 🔥 VERY IMPORTANT
+    df = df.reset_index()
     return agg_df
 
 def split_series(df, target='transaction_qty'):
