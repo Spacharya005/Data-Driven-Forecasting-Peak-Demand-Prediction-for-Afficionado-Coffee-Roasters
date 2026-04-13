@@ -22,18 +22,29 @@ def run_pipeline(df, target='transaction_qty'):
 
 def aggregate_data(df, freq='D'):
 
-    agg_df = df.groupby([
+    # Convert to datetime
+    df['datetime'] = pd.to_datetime(df['datetime'])
+
+    # ✅ STEP 1: Aggregate FIRST (removes duplicates)
+    df = df.groupby([
         pd.Grouper(key='datetime', freq=freq),
         'store_id'
     ]).agg({
         'transaction_qty': 'sum',
         'revenue': 'sum'
     }).reset_index()
+
+    # ✅ STEP 2: Sort
+    df = df.sort_values('datetime')
+
+    # ✅ STEP 3: Create continuous time index (NO duplicates now)
     df = df.set_index('datetime')
 
-    df = df.asfreq(freq, fill_value=0)  # 🔥 VERY IMPORTANT
+    df = df.asfreq(freq, fill_value=0)   # 🔥 now safe
+
     df = df.reset_index()
-    return agg_df
+
+    return df
 
 def split_series(df, target='transaction_qty'):
 
