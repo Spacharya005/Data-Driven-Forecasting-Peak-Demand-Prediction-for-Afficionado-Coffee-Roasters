@@ -107,8 +107,7 @@ label {
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 file_path = os.path.join(BASE_DIR, "data", "coffee_sales.csv")
 df = load_data(file_path)
-st.write("Raw Data Shape:", df.shape)
-st.write(df.head())
+
 # -----------------------------
 # SIDEBAR
 # -----------------------------
