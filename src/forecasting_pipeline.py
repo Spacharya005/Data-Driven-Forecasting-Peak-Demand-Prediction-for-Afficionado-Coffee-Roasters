@@ -26,7 +26,7 @@ def aggregate_data(df, freq='H'):
     df['revenue'] = df['transaction_qty'] * df['unit_price']
 
     grouped = df.groupby([
-        pd.Grouper(key='transaction_time', freq=freq),
+        pd.Grouper(key='datetime', freq=freq),
         'store_id'
     ]).agg({
         'transaction_qty': 'sum',

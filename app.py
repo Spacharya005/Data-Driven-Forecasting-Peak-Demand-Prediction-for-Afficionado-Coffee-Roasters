@@ -148,7 +148,9 @@ selected_models = st.sidebar.multiselect(
 
 freq_map = {"Hourly": "h", "Daily": "D"}
 
-
+df['datetime'] = pd.to_datetime(
+    df['year'].astype(str) + " " + df['transaction_time']
+)
 # -----------------------------
 # FILTER + PROCESS
 # -----------------------------
@@ -156,11 +158,12 @@ df_store = df[df['store_id'] == store]
 st.write("Store Data Shape:", df_store.shape)
 
 agg_df = aggregate_data(df_store, freq_map[freq])# ✅ PRD CRITICAL FIX (continuous time index)
-agg_df = agg_df.set_index('datetime').asfreq(freq_map[freq]).fillna(0).reset_index()
-
-# If aggregate_data still returns transaction_time
-if 'transaction_time' in agg_df.columns:
-    agg_df = agg_df.rename(columns={'transaction_time': 'datetime'})
+if 'datetime' not in agg_df.columns:
+    if 'transaction_time' in agg_df.columns:
+        agg_df['datetime'] = pd.to_datetime(agg_df['transaction_time'])
+    else:
+        st.error("❌ No valid time column found after aggregation")
+        st.stop()
 
 # Now safe
 agg_df = agg_df.set_index('datetime').asfreq(freq_map[freq]).fillna(0).reset_index()
