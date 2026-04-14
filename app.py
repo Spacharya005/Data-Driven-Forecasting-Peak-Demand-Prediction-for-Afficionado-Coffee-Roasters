@@ -154,7 +154,7 @@ df['datetime'] = pd.to_datetime(
 # FILTER + PROCESS
 # -----------------------------
 df_store = df[df['store_id'] == store]
-st.write("Store Data Shape:", df_store.shape)
+# st.write("Store Data Shape:", df_store.shape)
 
 agg_df = aggregate_data(df_store, freq_map[freq])
 
@@ -171,7 +171,7 @@ agg_df = agg_df.set_index('datetime') \
                .reset_index()
 
 feat_df = create_features(agg_df)
-st.write("After Feature Engineering:", feat_df.shape)
+# st.write("After Feature Engineering:", feat_df.shape)
 
 if feat_df.empty:
     st.error("🚨 Feature engineering produced empty dataset")
