@@ -12,13 +12,12 @@ def create_features(df):
     # Lag features
     df['lag_1'] = df['transaction_qty'].shift(1)
     df['lag_24'] = df['transaction_qty'].shift(24)
-    df['lag_168'] = df['transaction_qty'].shift(168)
+    if len(df) > 168:
+        df['lag_168'] = df['target'].shift(168)
 
     # Rolling
     df['rolling_mean_3'] = df['transaction_qty'].rolling(3).mean()
     df['rolling_mean_7'] = df['transaction_qty'].rolling(7).mean()
-    # df['hour'] = df['datetime'].dt.hour
-    # df['dayofweek'] = df['datetime'].dt.dayofweek
     # Drop only rows where target is missing
     df = df.dropna(subset=['target'])
 
