@@ -111,7 +111,7 @@ df = load_data(file_path)
 # -----------------------------
 # SIDEBAR
 # -----------------------------
-st.sidebar.header("Controls")
+st.sidebar.header("Dashboard Controls")
 
 store = st.sidebar.selectbox(
     "Select Store",
