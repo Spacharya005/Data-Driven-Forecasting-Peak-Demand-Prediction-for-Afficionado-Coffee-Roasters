@@ -145,18 +145,14 @@ selected_models = st.sidebar.multiselect(
     model_list,
     default=["Naive", "ARIMA", "Gradient Boosting"]
 )
-category = st.sidebar.selectbox(
-    "Select Category",
-    df['product_category'].unique()
-)
+
 freq_map = {"Hourly": "h", "Daily": "D"}
 
 
 # -----------------------------
 # FILTER + PROCESS
 # -----------------------------
-df_store = df[df['store_id'] == store &
-    (df['product_category'] == category)]
+df_store = df[df['store_id'] == store]
 st.write("Store Data Shape:", df_store.shape)
 
 agg_df = aggregate_data(df_store, freq_map[freq])
