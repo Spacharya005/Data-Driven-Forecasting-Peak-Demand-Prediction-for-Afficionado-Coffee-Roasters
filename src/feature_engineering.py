@@ -24,11 +24,11 @@
 #     return df
 
 def create_features(df):
-    df = df.sort_values(['store_id', 'transaction_time'])
+    df = df.sort_values(['store_id', 'datetime'])
 
     # Time features
-    df['hour'] = df['transaction_time'].dt.hour
-    df['day_of_week'] = df['transaction_time'].dt.dayofweek
+    df['hour'] = df['datetime'].dt.hour
+    df['day_of_week'] = df['datetime'].dt.dayofweek
 
     # Lag features
     df['lag_1'] = df.groupby('store_id')['transaction_qty'].shift(1)
