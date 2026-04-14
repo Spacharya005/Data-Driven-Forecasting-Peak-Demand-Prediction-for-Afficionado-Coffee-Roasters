@@ -41,6 +41,8 @@ def gradient_boosting_model(X_train, y_train, X_test):
     model.fit(X_train, y_train)
 
     preds = model.predict(X_test)
+    print("X_train shape:", X_train.shape)
+    print("X_test shape:", X_test.shape)
     return preds
 
 # -------------------------------
@@ -108,7 +110,7 @@ def prophet_forecast(df, periods):
     freq = pd.infer_freq(prophet_df['ds'])
 
     if freq is None:
-        freq = 'D'  # fallback
+        freq = 'H'  # fallback
 
     future = model.make_future_dataframe(periods=periods, freq=freq)
 
@@ -172,15 +174,9 @@ def run_model(model_name, train, test=None, X_train=None, X_test=None, df=None, 
         # ----------------------
         elif model_name == "Gradient Boosting":
 
-            # Future forecast case
-            if test is None:
-                return np.repeat(train.mean(), horizon)
-
             if X_train is None or X_test is None:
-                raise ValueError("Gradient Boosting needs X_train and X_test")
-
+                return np.repeat(train.mean(), horizon)
             return gradient_boosting_model(X_train, train.values, X_test)
-
         # ----------------------
         # DEFAULT
         # ----------------------

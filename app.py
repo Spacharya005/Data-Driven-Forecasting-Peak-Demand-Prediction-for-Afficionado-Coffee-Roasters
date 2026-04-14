@@ -144,14 +144,17 @@ selected_models = st.sidebar.multiselect(
     model_list,
     default=["Naive", "ARIMA", "Gradient Boosting"]
 )
-
+category = st.sidebar.selectbox(
+    "Select Category",
+    df['product_category'].unique()
+)
 freq_map = {"Hourly": "h", "Daily": "D"}
 
 
 # -----------------------------
 # FILTER + PROCESS
 # -----------------------------
-df_store = df[df['store_id'] == store]
+df_store = df[df['store_id'] == store & (df['product_category'] == category)]
 
 agg_df = aggregate_data(df_store, freq_map[freq])
 
@@ -166,7 +169,7 @@ train, test = split_series(feat_df)
 
 X_train = feat_df.iloc[:len(train)].drop(columns=['target', 'datetime'])
 X_test = feat_df.iloc[len(train):].drop(columns=['target', 'datetime'])
-
+print("X_train columns:", X_train.columns)
 
 # -----------------------------
 # RUN MODELS
