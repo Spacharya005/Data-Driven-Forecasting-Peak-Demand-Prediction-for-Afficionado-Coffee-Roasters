@@ -107,7 +107,8 @@ label {
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 file_path = os.path.join(BASE_DIR, "data", "coffee_sales.csv")
 df = load_data(file_path)
-
+st.write("Raw Data Shape:", df.shape)
+st.write(df.head())
 # -----------------------------
 # SIDEBAR
 # -----------------------------
@@ -154,20 +155,12 @@ freq_map = {"Hourly": "h", "Daily": "D"}
 # -----------------------------
 # FILTER + PROCESS
 # -----------------------------
-print("Total data:", df.shape)
-print("Selected store:", store)
+df_store = df[df['store_id'] == store]
+st.write("Store Data Shape:", df_store.shape)
 
-df_store = df[df['store_id'] == store &
-    (df['product_category'] == category)]
-df['product_category'] = df['product_category'].str.strip()
-print("After store filter:", df_store.shape)
-print("Category:", category)
-print("After category filter:", df_store.shape)
-print("Available store IDs:", df['store_id'].unique())
-if df_store.empty:
-    st.error("❌ No data available for selected store/category")
-    st.stop()
 agg_df = aggregate_data(df_store, freq_map[freq])
+# ✅ PRD CRITICAL FIX (continuous time index)
+agg_df = agg_df.set_index('datetime').asfreq(freq_map[freq]).fillna(0).reset_index()
 
 if metric_type == "Revenue":
     agg_df['target'] = agg_df['revenue']   # ✅ FIX
@@ -175,12 +168,24 @@ else:
     agg_df['target'] = agg_df['transaction_qty']
 
 feat_df = create_features(agg_df)
+st.write("After Feature Engineering:", feat_df.shape)
+
+if feat_df.empty:
+    st.error("🚨 Feature engineering produced empty dataset")
+    st.stop()
 
 train, test = split_series(feat_df)
+st.write("Train Shape:", train.shape)
+st.write("Test Shape:", test.shape)
 
-X_train = feat_df.iloc[:len(train)].drop(columns=['target', 'datetime'])
-X_test = feat_df.iloc[len(train):].drop(columns=['target', 'datetime'])
-print("X_train columns:", X_train.columns)
+if len(train) == 0 or len(test) == 0:
+    st.error("🚨 Train/Test split failed")
+    st.stop()
+
+# X_train = feat_df.iloc[:len(train)].drop(columns=['target', 'datetime'])
+# X_test = feat_df.iloc[len(train):].drop(columns=['target', 'datetime'])
+X_train = train.drop(columns=['target', 'datetime'])
+X_test = test.drop(columns=['target', 'datetime'])
 
 # -----------------------------
 # RUN MODELS
@@ -220,10 +225,11 @@ future_preds = run_model(
     horizon=horizon
 )
 
-freq_fixed = 'h' if freq_map[freq] == 'H' else 'D'
+# freq_fixed = 'h' if freq_map[freq] == 'H' else 'D'
+freq_fixed = freq_map[freq]
 
 future_index = pd.date_range(
-    start=agg_df['datetime'].iloc[-1],
+    start=agg_df['datetime'].max(),
     periods=horizon + 1,
     freq=freq_fixed
 )[1:]
@@ -265,7 +271,9 @@ with tab1:
 
     # ✅ Confidence Interval (Best Model)
     preds = predictions[best_model]
-    std = np.std(preds)
+    residuals = test.values - preds
+
+    std = np.std(residuals)
 
     upper = preds + 1.96 * std
     lower = preds - 1.96 * std
@@ -294,15 +302,10 @@ with tab1:
             tickfont=dict(color="white" if plotly_theme == "plotly_dark" else "black")
         )
     )
+    # Add future forecast to SAME graph
 
     st.plotly_chart(fig, use_container_width=True)
-    # Add future forecast to SAME graph
-    fig.add_trace(go.Scatter(
-        x=future_index,
-        y=future_preds,
-        mode='lines+markers',
-        name='Future Forecast'
-    ))
+
     st.subheader(f"{best_model} Forecast for Store {store}")
 # =============================
 # 📊 TAB 2: MODEL COMPARISON
@@ -350,9 +353,7 @@ with tab3:
     future_df['day'] = future_df['datetime'].dt.day_name()
 
     # ✅ THEN USE
-    peak_hour = future_df.groupby('hour')['target'].mean().idxmax()
 
-    st.success(f"🔥 Peak demand expected around {peak_hour}:00 hours")
     peak_hour = future_df.groupby('hour')['target'].mean().idxmax()
 
     st.success(f"🔥 Peak demand expected around {peak_hour}:00 hours")
