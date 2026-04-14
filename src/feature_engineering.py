@@ -19,7 +19,11 @@ def create_features(df):
     df['rolling_mean_7'] = df['transaction_qty'].rolling(7).mean()
     # df['hour'] = df['datetime'].dt.hour
     # df['dayofweek'] = df['datetime'].dt.dayofweek
-    df = df.dropna()
+    # Drop only rows where target is missing
+    df = df.dropna(subset=['target'])
+
+    # Fill lag/rolling NaNs instead of dropping everything
+    df = df.fillna(method='bfill').fillna(method='ffill')
 
     return df
 
