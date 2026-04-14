@@ -154,8 +154,19 @@ freq_map = {"Hourly": "h", "Daily": "D"}
 # -----------------------------
 # FILTER + PROCESS
 # -----------------------------
-df_store = df[df['store_id'] == store & (df['product_category'] == category)]
+print("Total data:", df.shape)
+print("Selected store:", store)
 
+df_store = df[df['store_id'] == store &
+    (df['product_category'] == category)]
+df['product_category'] = df['product_category'].str.strip()
+print("After store filter:", df_store.shape)
+print("Category:", category)
+print("After category filter:", df_store.shape)
+print("Available store IDs:", df['store_id'].unique())
+if df_store.empty:
+    st.error("❌ No data available for selected store/category")
+    st.stop()
 agg_df = aggregate_data(df_store, freq_map[freq])
 
 if metric_type == "Revenue":

@@ -20,6 +20,7 @@ def run_pipeline(df, target='transaction_qty'):
 
     return X_train, X_test, y_train, y_test
 
+print("Before aggregation:", df.shape)
 def aggregate_data(df, freq='D'):
 
     # Convert to datetime

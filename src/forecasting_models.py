@@ -17,6 +17,10 @@ from prophet import Prophet
 # -------------------------------
 
 def naive_forecast(train, test):
+
+    if len(train) == 0:
+        return np.zeros(len(test))
+
     last_value = train.iloc[-1]
     return np.repeat(last_value, len(test))
 
