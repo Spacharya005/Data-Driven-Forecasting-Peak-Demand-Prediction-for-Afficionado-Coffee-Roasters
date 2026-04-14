@@ -20,18 +20,34 @@ def run_pipeline(df, target='transaction_qty'):
 
     return X_train, X_test, y_train, y_test
 
-def aggregate_data(df, freq='H'):
-    df['transaction_time'] = pd.to_datetime(df['transaction_time'])
+def aggregate_data(df, freq='D'):
 
-    df['revenue'] = df['transaction_qty'] * df['unit_price']
+    # ✅ Create proper datetime column FIRST
+    df['datetime'] = pd.to_datetime(
+        df['year'].astype(str) + ' ' + df['transaction_time']
+    )
 
+    # Map frequency
+    freq_map = {
+        "hourly": "H",
+        "daily": "D",
+        "h": "H",
+        "d": "D"
+    }
+
+    freq = freq_map.get(freq.lower(), freq)
+
+    # ✅ Aggregate properly
     grouped = df.groupby([
         pd.Grouper(key='datetime', freq=freq),
         'store_id'
     ]).agg({
         'transaction_qty': 'sum',
-        'revenue': 'sum'
+        'unit_price': 'mean'
     }).reset_index()
+
+    # ✅ Create revenue AFTER aggregation
+    grouped['revenue'] = grouped['transaction_qty'] * grouped['unit_price']
 
     return grouped
 

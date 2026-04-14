@@ -157,16 +157,19 @@ df['datetime'] = pd.to_datetime(
 df_store = df[df['store_id'] == store]
 st.write("Store Data Shape:", df_store.shape)
 
-agg_df = aggregate_data(df_store, freq_map[freq])# ✅ PRD CRITICAL FIX (continuous time index)
-if 'datetime' not in agg_df.columns:
-    if 'transaction_time' in agg_df.columns:
-        agg_df['datetime'] = pd.to_datetime(agg_df['transaction_time'])
-    else:
-        st.error("❌ No valid time column found after aggregation")
-        st.stop()
+agg_df = aggregate_data(df_store, freq_map[freq])
 
-# Now safe
-agg_df = agg_df.set_index('datetime').asfreq(freq_map[freq]).fillna(0).reset_index()
+# ✅ SAFETY CHECK (debug)
+if 'datetime' not in agg_df.columns:
+    st.error("🚨 datetime column missing after aggregation")
+    st.write(agg_df.columns)
+    st.stop()
+
+# ✅ PRD FIX: continuous time index
+agg_df = agg_df.set_index('datetime') \
+               .asfreq(freq_map[freq]) \
+               .fillna(0) \
+               .reset_index()
 
 feat_df = create_features(agg_df)
 st.write("After Feature Engineering:", feat_df.shape)
