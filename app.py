@@ -155,7 +155,8 @@ freq_map = {"Hourly": "h", "Daily": "D"}
 # -----------------------------
 # FILTER + PROCESS
 # -----------------------------
-df_store = df[df['store_id'] == store]
+df_store = df[df['store_id'] == store &
+    (df['product_category'] == category)]
 st.write("Store Data Shape:", df_store.shape)
 
 agg_df = aggregate_data(df_store, freq_map[freq])
