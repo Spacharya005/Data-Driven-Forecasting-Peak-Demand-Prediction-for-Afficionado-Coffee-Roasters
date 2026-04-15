@@ -185,10 +185,10 @@ if len(train) == 0 or len(test) == 0:
     st.error("🚨 Train/Test split failed")
     st.stop()
 
-X_train = feat_df.iloc[:len(train)].drop(columns=['target', 'datetime'])
-X_test = feat_df.iloc[len(train):].drop(columns=['target', 'datetime'])
-# X_train = train.drop(columns=['target', 'datetime'])
-# X_test = test.drop(columns=['target', 'datetime'])
+# X_train = feat_df.iloc[:len(train)].drop(columns=['target', 'datetime'])
+# X_test = feat_df.iloc[len(train):].drop(columns=['target', 'datetime'])
+X_train = train.drop(columns=['target', 'datetime'])
+X_test = test.drop(columns=['target', 'datetime'])
 
 # -----------------------------
 # RUN MODELS
