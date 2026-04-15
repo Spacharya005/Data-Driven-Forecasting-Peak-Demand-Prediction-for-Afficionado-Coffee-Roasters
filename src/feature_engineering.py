@@ -21,7 +21,8 @@ def create_features(df):
     df['rolling_mean_7'] = df['transaction_qty'].rolling(7).mean()
     # Drop only rows where target is missing
     if 'target' in df.columns:
-        df = df.dropna(subset=['target'])
+        # df = df.dropna(subset=['target'])
+        df = df.dropna().reset_index(drop=True)
     else:
         print("⚠️ target column missing in feature_engineering")
         print(df.columns)
@@ -31,20 +32,3 @@ def create_features(df):
 
     return df
 
-# def create_features(df):
-#     df = df.sort_values(['store_id', 'datetime'])
-
-#     # Time features
-#     df['hour'] = df['datetime'].dt.hour
-#     df['day_of_week'] = df['datetime'].dt.dayofweek
-
-#     # Lag features
-#     df['lag_1'] = df.groupby('store_id')['transaction_qty'].shift(1)
-#     df['lag_24'] = df.groupby('store_id')['transaction_qty'].shift(24)
-#     df['lag_168'] = df.groupby('store_id')['transaction_qty'].shift(168)
-
-#     # Rolling features
-#     df['rolling_3'] = df.groupby('store_id')['transaction_qty'].transform(lambda x: x.rolling(3).mean())
-#     df['rolling_7'] = df.groupby('store_id')['transaction_qty'].transform(lambda x: x.rolling(7).mean())
-
-#     return df.dropna()

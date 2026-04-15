@@ -158,11 +158,11 @@ df_store = df[df['store_id'] == store]
 
 agg_df = aggregate_data(df_store, freq_map[freq])
 
-# ✅ SAFETY CHECK (debug)
-if 'datetime' not in agg_df.columns:
-    st.error("🚨 datetime column missing after aggregation")
-    st.write(agg_df.columns)
-    st.stop()
+if metric_type == "Quantity":
+    agg_df['target'] = agg_df['transaction_qty']
+else:
+    agg_df['target'] = agg_df['revenue']
+
 
 # ✅ PRD FIX: continuous time index
 agg_df = agg_df.set_index('datetime') \
@@ -182,6 +182,7 @@ y_train, y_test = split_series(feat_df, target='target')
 
 X_train = feat_df.iloc[:len(y_train)].drop(columns=['target', 'datetime'])
 X_test = feat_df.iloc[len(y_train):].drop(columns=['target', 'datetime'])
+
 
 if len(y_train) == 0 or len(y_test) == 0:
     st.error("🚨 Train/Test split failed")
