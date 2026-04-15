@@ -148,8 +148,11 @@ selected_models = st.sidebar.multiselect(
 freq_map = {"Hourly": "h", "Daily": "D"}
 
 df['datetime'] = pd.to_datetime(
-    df['year'].astype(str) + " " + df['transaction_time']
+    df['year'].astype(str) + ' ' + df['transaction_time'],
+    format='%Y %H:%M:%S',
+    errors='coerce'
 )
+
 # -----------------------------
 # FILTER + PROCESS
 # -----------------------------

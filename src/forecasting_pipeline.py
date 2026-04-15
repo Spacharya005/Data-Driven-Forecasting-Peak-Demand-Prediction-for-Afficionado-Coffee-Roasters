@@ -29,9 +29,9 @@ def aggregate_data(df, freq='D'):
 
     # Frequency mapping
     freq_map = {
-        "hourly": "H",
+        "hourly": "h",
         "daily": "D",
-        "h": "H",
+        "h": "h",
         "d": "D"
     }
 
@@ -57,7 +57,7 @@ def split_series(df, target='transaction_qty'):
 
     return train, test
 
-def fill_missing_time(df, freq='H'):
+def fill_missing_time(df, freq='h'):
     full_data = []
 
     for store in df['store_id'].unique():
