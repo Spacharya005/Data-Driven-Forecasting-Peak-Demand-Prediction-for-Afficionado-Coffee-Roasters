@@ -1,6 +1,4 @@
-# from numpy.char import split
 import pandas as pd
-# from sklearn.model_selection import train_test_split
 
 def run_pipeline(df, target='transaction_qty'):
 
@@ -23,12 +21,13 @@ def run_pipeline(df, target='transaction_qty'):
 
 def aggregate_data(df, freq='D'):
 
-    # ✅ Create proper datetime column FIRST
-    df['datetime'] = pd.to_datetime(
-        df['year'].astype(str) + ' ' + df['transaction_time']
-    )
+    # Ensure datetime exists
+    if 'datetime' not in df.columns:
+        df['datetime'] = pd.to_datetime(
+            df['year'].astype(str) + ' ' + df['transaction_time']
+        )
 
-    # Map frequency
+    # Frequency mapping
     freq_map = {
         "hourly": "H",
         "daily": "D",
@@ -38,17 +37,14 @@ def aggregate_data(df, freq='D'):
 
     freq = freq_map.get(freq.lower(), freq)
 
-    # ✅ Aggregate properly
+    # ✅ CORRECT aggregation
     grouped = df.groupby([
         pd.Grouper(key='datetime', freq=freq),
         'store_id'
     ]).agg({
         'transaction_qty': 'sum',
-        'revenue': 'sum'
+        'revenue': 'sum'   # ✅ USE THIS
     }).reset_index()
-
-    # ✅ Create revenue AFTER aggregation
-    grouped['revenue'] = grouped['transaction_qty'] * grouped['unit_price']
 
     return grouped
 
