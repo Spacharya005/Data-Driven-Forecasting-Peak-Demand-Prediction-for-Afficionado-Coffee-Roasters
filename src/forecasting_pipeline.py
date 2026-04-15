@@ -1,6 +1,6 @@
-from numpy.char import split
+# from numpy.char import split
 import pandas as pd
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
 
 def run_pipeline(df, target='transaction_qty'):
 
