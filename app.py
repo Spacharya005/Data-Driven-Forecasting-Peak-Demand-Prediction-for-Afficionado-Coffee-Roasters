@@ -163,12 +163,12 @@ if metric_type == "Quantity":
 else:
     agg_df['target'] = agg_df['revenue']
 
-st.write("After target creation:", agg_df.columns)
-# # ✅ PRD FIX: continuous time index
-# agg_df = agg_df.set_index('datetime') \
-#                .asfreq(freq_map[freq]) \
-#                .fillna(0) \
-#                .reset_index()
+# st.write("After target creation:", agg_df.columns)
+# ✅ PRD FIX: continuous time index
+agg_df = agg_df.set_index('datetime') \
+               .asfreq(freq_map[freq]) \
+               .fillna(0) \
+               .reset_index()
 
 feat_df = create_features(agg_df)
 # st.write("After Feature Engineering:", feat_df.shape)
