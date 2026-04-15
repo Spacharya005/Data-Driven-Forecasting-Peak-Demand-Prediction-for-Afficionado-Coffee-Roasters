@@ -1,92 +1,58 @@
 # def create_features(df):
-    
-#     # print("Before feature engineering:", df.shape)
-#     df = df.sort_values('datetime')
+#     df = df.copy()
 
-#     # Only create if missing
-#     if 'hour' not in df.columns:
-#         df['hour'] = df['datetime'].dt.hour
-
-#     if 'day_of_week' not in df.columns:
-#         df['day_of_week'] = df['datetime'].dt.dayofweek
+#     # Ensure target exists
+#     if 'target' not in df.columns:
+#         raise ValueError("❌ 'target' column missing BEFORE feature engineering")
 
 #     # Lag features
-#     df['lag_1'] = df['transaction_qty'].shift(1)
-#     df['lag_24'] = df['transaction_qty'].shift(24)
-#     if len(df) > 168:
-#         df['lag_168'] = df['target'].shift(168)
+#     df['lag_1'] = df['target'].shift(1)
+#     df['lag_24'] = df['target'].shift(24)
+#     df['lag_168'] = df['target'].shift(168)
 
-#     # Rolling
-#     df['rolling_mean_3'] = df['transaction_qty'].rolling(3).mean()
-#     df['rolling_mean_7'] = df['transaction_qty'].rolling(7).mean()
-#     # Drop only rows where target is missing
-#     if 'target' in df.columns:
-#         # df = df.dropna(subset=['target'])
-#         df = df.dropna().reset_index(drop=True)
-#     else:
-#         print("⚠️ target column missing in feature_engineering")
-#         print(df.columns)
+#     # Rolling features
+#     df['rolling_mean_3'] = df['target'].rolling(3).mean()
+#     df['rolling_mean_7'] = df['target'].rolling(7).mean()
 
-#     # Fill lag/rolling NaNs instead of dropping everything
-#     df = df.fillna(method='bfill').fillna(method='ffill')
+#     # Time features
+#     df['hour'] = df['datetime'].dt.hour
+#     df['day_of_week'] = df['datetime'].dt.dayofweek
+
+#     # ✅ IMPORTANT: Drop AFTER all features
+#     df = df.dropna().reset_index(drop=True)
 
 #     return df
 
 def create_features(df):
     df = df.copy()
 
-    # Ensure target exists
     if 'target' not in df.columns:
-        raise ValueError("❌ 'target' column missing BEFORE feature engineering")
+        raise ValueError("❌ target missing before feature engineering")
 
-    # Lag features
+    n = len(df)
+
+    # ✅ ALWAYS SAFE
     df['lag_1'] = df['target'].shift(1)
-    df['lag_24'] = df['target'].shift(24)
-    df['lag_168'] = df['target'].shift(168)
 
-    # Rolling features
-    df['rolling_mean_3'] = df['target'].rolling(3).mean()
-    df['rolling_mean_7'] = df['target'].rolling(7).mean()
+    # ✅ CONDITIONAL LAGS
+    if n > 24:
+        df['lag_24'] = df['target'].shift(24)
 
-    # Time features
+    if n > 168:
+        df['lag_168'] = df['target'].shift(168)
+
+    # ✅ ROLLING
+    if n > 3:
+        df['rolling_mean_3'] = df['target'].rolling(3).mean()
+
+    if n > 7:
+        df['rolling_mean_7'] = df['target'].rolling(7).mean()
+
+    # ✅ TIME FEATURES (always safe)
     df['hour'] = df['datetime'].dt.hour
     df['day_of_week'] = df['datetime'].dt.dayofweek
 
-    # ✅ IMPORTANT: Drop AFTER all features
-    df = df.dropna().reset_index(drop=True)
+    # 🔥 CRITICAL FIX → DO NOT DROP EVERYTHING
+    df = df.dropna(subset=['lag_1']).reset_index(drop=True)
 
     return df
-
-# def create_features(df):
-#     df = df.copy()
-
-#     if 'target' not in df.columns:
-#         raise ValueError("❌ target missing before feature engineering")
-
-#     n = len(df)
-
-#     # ✅ Adaptive lags
-#     if n > 1:
-#         df['lag_1'] = df['target'].shift(1)
-
-#     if n > 24:
-#         df['lag_24'] = df['target'].shift(24)
-
-#     if n > 168:
-#         df['lag_168'] = df['target'].shift(168)
-
-#     # Rolling...
-#     if n > 3:
-#         df['rolling_mean_3'] = df['target'].rolling(3).mean()
-
-#     if n > 7:
-#         df['rolling_mean_7'] = df['target'].rolling(7).mean()
-
-#     # Time features
-#     df['hour'] = df['datetime'].dt.hour
-#     df['day_of_week'] = df['datetime'].dt.dayofweek
-
-#     # ✅ Drop only if features exist
-#     df = df.dropna().reset_index(drop=True)
-
-    # return df
