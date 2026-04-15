@@ -6,8 +6,8 @@ def load_data(path):
 
     # Convert datetime
     df['datetime'] = pd.to_datetime(
-        df['year'].astype(str) + ' ' + df['transaction_time'],
-        format='%Y %H:%M:%S',
+        df['year'].astype(str) + "-01-01 " + df['transaction_time'],
+        format='%Y-%m-%d %H:%M:%S',
         errors='coerce'
     )
 
