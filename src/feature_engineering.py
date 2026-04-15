@@ -1,4 +1,5 @@
 def create_features(df):
+    print("Columns entering feature engineering:", df.columns)
     print("Before feature engineering:", df.shape)
     df = df.sort_values('datetime')
 
@@ -19,7 +20,11 @@ def create_features(df):
     df['rolling_mean_3'] = df['transaction_qty'].rolling(3).mean()
     df['rolling_mean_7'] = df['transaction_qty'].rolling(7).mean()
     # Drop only rows where target is missing
-    df = df.dropna(subset=['target'])
+    if 'target' in df.columns:
+        df = df.dropna(subset=['target'])
+    else:
+        print("⚠️ target column missing in feature_engineering")
+        print(df.columns)
 
     # Fill lag/rolling NaNs instead of dropping everything
     df = df.fillna(method='bfill').fillna(method='ffill')
