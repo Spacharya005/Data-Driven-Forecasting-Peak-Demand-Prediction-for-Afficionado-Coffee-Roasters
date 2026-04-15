@@ -25,9 +25,7 @@ def aggregate_data(df, freq='D'):
 
     # ✅ Create proper datetime column FIRST
     df['datetime'] = pd.to_datetime(
-        df['year'].astype(str) + ' ' + df['transaction_time'],
-        format='%Y %H:%M:%S',
-        errors='coerce'
+        df['year'].astype(str) + ' ' + df['transaction_time']
     )
 
     # Map frequency
@@ -46,7 +44,7 @@ def aggregate_data(df, freq='D'):
         'store_id'
     ]).agg({
         'transaction_qty': 'sum',
-        'unit_price': 'mean'
+        'revenue': 'sum'
     }).reset_index()
 
     # ✅ Create revenue AFTER aggregation
@@ -58,10 +56,9 @@ def split_series(df, target='transaction_qty'):
 
     split = int(len(df) * 0.8)
 
-    # train = df[target][:split]
-    # test = df[target][split:]
-    train = df.iloc[:split]
-    test = df.iloc[split:]
+    train = df[target].iloc[:split]
+    test = df[target].iloc[split:]
+
     return train, test
 
 def fill_missing_time(df, freq='H'):
@@ -71,12 +68,12 @@ def fill_missing_time(df, freq='H'):
         store_df = df[df['store_id'] == store].copy()
 
         idx = pd.date_range(
-            start=store_df['transaction_time'].min(),
-            end=store_df['transaction_time'].max(),
+            start=store_df['datetime'].min(),
+            end=store_df['datetime'].max(),
             freq=freq
         )
 
-        store_df = store_df.set_index('transaction_time').reindex(idx)
+        store_df = store_df.set_index('datetime').reindex(idx)
         store_df['store_id'] = store
 
         # Fill missing sales with 0 (IMPORTANT)

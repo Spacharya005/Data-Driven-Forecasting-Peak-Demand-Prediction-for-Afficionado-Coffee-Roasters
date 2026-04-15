@@ -1,6 +1,6 @@
 def create_features(df):
-    print("Columns entering feature engineering:", df.columns)
-    print("Before feature engineering:", df.shape)
+    
+    # print("Before feature engineering:", df.shape)
     df = df.sort_values('datetime')
 
     # Only create if missing

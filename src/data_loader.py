@@ -5,7 +5,9 @@ def load_data(path):
     df = pd.read_csv(path)
 
     # Convert datetime
-    df['datetime'] = pd.to_datetime(df['datetime'], dayfirst=True)
+    df['datetime'] = pd.to_datetime(
+        df['year'].astype(str) + ' ' + df['transaction_time']
+    )
 
     # Revenue
     if 'revenue' not in df.columns:

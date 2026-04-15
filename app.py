@@ -177,18 +177,16 @@ if feat_df.empty:
     st.error("🚨 Feature engineering produced empty dataset")
     st.stop()
 
-train, test = split_series(feat_df)
-st.write("Train Shape:", train.shape)
-st.write("Test Shape:", test.shape)
+# train, test = split_series(feat_df)
+y_train, y_test = split_series(feat_df, target='target')
 
-if len(train) == 0 or len(test) == 0:
+X_train = feat_df.iloc[:len(y_train)].drop(columns=['target', 'datetime'])
+X_test = feat_df.iloc[len(y_train):].drop(columns=['target', 'datetime'])
+
+if len(y_train) == 0 or len(y_test) == 0:
     st.error("🚨 Train/Test split failed")
     st.stop()
 
-# X_train = feat_df.iloc[:len(train)].drop(columns=['target', 'datetime'])
-# X_test = feat_df.iloc[len(train):].drop(columns=['target', 'datetime'])
-X_train = train.drop(columns=['target', 'datetime'])
-X_test = test.drop(columns=['target', 'datetime'])
 
 # -----------------------------
 # RUN MODELS
@@ -202,8 +200,8 @@ with st.spinner("☕ Brewing predictions... Please wait..."):
     for model in selected_models:
         preds = run_model(
             model,
-            train,
-            test,
+            y_train,
+            y_test,
             X_train,
             X_test,
         )
@@ -212,7 +210,7 @@ with st.spinner("☕ Brewing predictions... Please wait..."):
 # -----------------------------
 # MODEL EVALUATION
 # -----------------------------
-results_df = evaluate_all(test.values, predictions)
+results_df = evaluate_all(y_test.values, predictions)
 best_model = results_df.iloc[0]['Model']
 
 # -----------------------------
@@ -220,7 +218,7 @@ best_model = results_df.iloc[0]['Model']
 # -----------------------------
 future_preds = run_model(
     best_model,
-    train,
+    y_train,
     None,
     X_train,
     None,
@@ -258,15 +256,15 @@ with tab1:
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(
-        x=test.index,
-        y=test.values,
+        x=y_test.index,
+        y=y_test.values,
         mode='lines',
         name='Actual'
     ))
 
     for model, preds in predictions.items():
         fig.add_trace(go.Scatter(
-                x=test.index,
+                x=y_test.index,
             y=preds,
             mode='lines',
             name=model
@@ -274,7 +272,7 @@ with tab1:
 
     # ✅ Confidence Interval (Best Model)
     preds = predictions[best_model]
-    residuals = test.values - preds
+    residuals = y_test.values - preds
 
     std = np.std(residuals)
 
@@ -361,11 +359,11 @@ with tab3:
 
     st.success(f"🔥 Peak demand expected around {peak_hour}:00 hours")
     st.subheader("Demand Spike Detection")
-    spikes = detect_spikes(test)
+    spikes = detect_spikes(y_test)
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(
-        y=test.values,
+        y=y_test.values,
         mode='lines',
         name='Demand'
     ))
