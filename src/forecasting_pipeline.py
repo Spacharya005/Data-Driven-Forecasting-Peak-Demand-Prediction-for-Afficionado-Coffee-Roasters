@@ -22,10 +22,13 @@ def run_pipeline(df, target='transaction_qty'):
 def aggregate_data(df, freq='D'):
 
     # Ensure datetime exists
-    if 'datetime' not in df.columns:
-        df['datetime'] = pd.to_datetime(
-            df['year'].astype(str) + ' ' + df['transaction_time']
-        )
+    df = df.sort_values(by=['year', 'transaction_time']).reset_index(drop=True)
+
+    df['datetime'] = pd.date_range(
+        start='2025-01-01',
+        periods=len(df),
+        freq='h'   # keep hourly base
+    )
 
     # Frequency mapping
     freq_map = {
@@ -42,9 +45,10 @@ def aggregate_data(df, freq='D'):
         pd.Grouper(key='datetime', freq=freq),
         'store_id'
     ]).agg({
-        'transaction_qty': 'sum',
-        'revenue': 'sum'   # ✅ USE THIS
+        'transaction_qty': 'sum'
     }).reset_index()
+
+    grouped['revenue'] = grouped['transaction_qty'] * df['unit_price'].mean()
 
     return grouped
 
