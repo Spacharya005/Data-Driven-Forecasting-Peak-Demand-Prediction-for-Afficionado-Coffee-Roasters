@@ -1,3 +1,4 @@
+from numpy.char import split
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -24,7 +25,9 @@ def aggregate_data(df, freq='D'):
 
     # ✅ Create proper datetime column FIRST
     df['datetime'] = pd.to_datetime(
-        df['year'].astype(str) + ' ' + df['transaction_time']
+        df['year'].astype(str) + ' ' + df['transaction_time'],
+        format='%Y %H:%M:%S',
+        errors='coerce'
     )
 
     # Map frequency
@@ -55,9 +58,10 @@ def split_series(df, target='transaction_qty'):
 
     split = int(len(df) * 0.8)
 
-    train = df[target][:split]
-    test = df[target][split:]
-
+    # train = df[target][:split]
+    # test = df[target][split:]
+    train = df.iloc[:split]
+    test = df.iloc[split:]
     return train, test
 
 def fill_missing_time(df, freq='H'):

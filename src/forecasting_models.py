@@ -25,16 +25,6 @@ def naive_forecast(train, test):
     return np.repeat(last_value, len(test))
 
 
-# def moving_average_forecast(train, test, window=3):
-#     preds = []
-#     history = list(train)
-
-#     for t in range(len(test)):
-#         preds.append(np.mean(history[-window:]))
-#         history.append(test.iloc[t])
-
-#     return np.array(preds)
-
 def gradient_boosting_model(X_train, y_train, X_test):
 
     model = GradientBoostingRegressor(
