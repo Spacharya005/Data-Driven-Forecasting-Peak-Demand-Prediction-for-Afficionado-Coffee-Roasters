@@ -257,7 +257,7 @@ future_preds = run_model(
 freq_fixed = freq_map[freq]
 
 future_index = pd.date_range(
-    start=agg_df['datetime'].max(),
+    start=agg_df['datetime'].max()+ pd.Timedelta(1, unit=freq_fixed),
     periods=horizon + 1,
     freq=freq_fixed
 )[1:]
@@ -305,12 +305,23 @@ with tab1:
 
     upper = preds + 1.96 * std
     lower = preds - 1.96 * std
-
-    best_case = future_preds * 0.9
-    worst_case = future_preds * 1.1
     
-    fig.add_trace(go.Scatter(y=upper, line=dict(width=0), showlegend=False))
+    # fig.add_trace(go.Scatter(y=upper, line=dict(width=0), showlegend=False))
+    fig.add_trace(go.Scatter(
+        x=y_test.index,
+        y=upper,
+        line=dict(width=0),
+        showlegend=False
+    ))
 
+    fig.add_trace(go.Scatter(
+        x=y_test.index,
+        y=lower,
+        fill='tonexty',
+        name='Confidence Interval',
+        opacity=0.2,
+        line=dict(width=0)
+    ))
 
 
     fig.update_layout(
@@ -425,12 +436,6 @@ with tab3:
     )
 
     if not pivot.empty:
-        fig.add_trace(go.Scatter(
-            x=future_index,
-            y=future_preds,
-            mode='lines+markers',
-            name='Future Forecast'
-        ))
         fig = px.imshow(
             pivot,
             text_auto=True,
