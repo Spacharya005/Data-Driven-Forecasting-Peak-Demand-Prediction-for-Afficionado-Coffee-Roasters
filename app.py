@@ -175,14 +175,14 @@ agg_df = agg_df.set_index('datetime') \
 
 feat_df = create_features(agg_df)
 # st.write("After Feature Engineering:", feat_df.shape)
-
+feat_df = feat_df.fillna(0)
 if feat_df.empty:
     st.error("🚨 Feature engineering produced empty dataset")
     st.stop()
 
 # train, test = split_series(feat_df)
 y_train, y_test = split_series(feat_df, target='target')
-
+feat_df = feat_df.fillna(0)
 X_train = feat_df.iloc[:len(y_train)].drop(columns=['target', 'datetime'])
 X_test = feat_df.iloc[len(y_train):].drop(columns=['target', 'datetime'])
 
@@ -200,9 +200,6 @@ predictions = {}
 with st.spinner("☕ Brewing predictions... Please wait..."):
 
     predictions = {}
-    print("\n🔍 Checking NaNs in data...")
-    print("X_train NaNs:", X_train.isna().sum().sum())
-    print("X_test NaNs:", X_test.isna().sum().sum())
     for model in selected_models:
         if model == "Prophet":
             preds = run_model(
@@ -221,15 +218,6 @@ with st.spinner("☕ Brewing predictions... Please wait..."):
                 X_train,
                 X_test,
             )
-
-        # 🔍 DEBUG 1: check if model failed (fallback detection)
-        print(f"\n🔎 Model: {model}")
-        print("First 5 predictions:", preds[:5])
-        print("Mean prediction:", np.mean(preds))
-
-        # 🔍 DEBUG 2: check if predictions are constant (fallback pattern)
-        if np.all(preds == preds[0]):
-            print(f"⚠️ {model} is returning CONSTANT predictions (likely fallback)")
 
         predictions[model] = preds.copy()   # 🔥 IMPORTANT FIX
 
