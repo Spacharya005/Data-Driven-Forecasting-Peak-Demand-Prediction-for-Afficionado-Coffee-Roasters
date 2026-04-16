@@ -182,7 +182,7 @@ feat_df.replace([np.inf, -np.inf], np.nan, inplace=True)
 # ✅ FIX: Smart NaN handling (NO OVER-SMOOTHING)
 feature_cols = feat_df.columns.difference(['target', 'datetime'])
 
-feat_df[feature_cols] = feat_df[feature_cols].fillna(0)
+feat_df[feature_cols] = feat_df[feature_cols].ffill().fillna(0)
 feat_df = feat_df.dropna(subset=['target'])
 
 if feat_df.empty:
@@ -207,7 +207,7 @@ if len(y_train) == 0 or len(y_test) == 0:
 # -----------------------------
 # ✅ CACHE MODELS (FIX REFRESH)
 # -----------------------------
-@st.cache_data
+@st.cache_data(ttl=3600)  # Cache for 1 hour
 def run_all_models(selected_models, y_train, y_test, X_train, X_test, feat_df):
     predictions = {}
     for model in selected_models:
@@ -248,7 +248,7 @@ future_preds = run_model(
     best_model,
     y_train,
     None,
-    X_train,
+    None,
     None,
     df=feat_df,
     horizon=horizon
@@ -308,14 +308,10 @@ with tab1:
 
     best_case = future_preds * 0.9
     worst_case = future_preds * 1.1
-
+    
     fig.add_trace(go.Scatter(y=upper, line=dict(width=0), showlegend=False))
-    fig.add_trace(go.Scatter(
-        y=lower,
-        fill='tonexty',
-        name='Confidence Interval',
-        opacity=0.2
-    ))
+
+
 
     fig.update_layout(
         template=plotly_theme,
@@ -420,8 +416,6 @@ with tab3:
     st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Future Demand Heatmap")
-
-
 
     pivot = future_df.pivot_table(
         values='target',
