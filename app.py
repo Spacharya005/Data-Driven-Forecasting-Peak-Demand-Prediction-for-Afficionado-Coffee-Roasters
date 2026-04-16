@@ -175,22 +175,20 @@ agg_df = agg_df.set_index('datetime') \
 
 feat_df = create_features(agg_df)
 
-# 🔥 FORCE CLEANING HERE (CRITICAL FIX)
 feat_df.replace([np.inf, -np.inf], np.nan, inplace=True)
-feat_df.fillna(0, inplace=True)
+
+# 🔥 THIS IS THE REAL FIX
+feat_df = feat_df.dropna().reset_index(drop=True)
+
 if feat_df.empty:
     st.error("🚨 Feature engineering produced empty dataset")
     st.stop()
 
-# 🔥 SPLIT FULL DATAFRAME FIRST
-train_df, test_df = split_series(feat_df)
-
-# THEN SEPARATE X and y
-y_train = train_df['target']
-y_test = test_df['target']
-
-X_train = train_df.drop(columns=['target', 'datetime'])
-X_test = test_df.drop(columns=['target', 'datetime'])
+# train, test = split_series(feat_df)
+y_train, y_test = split_series(feat_df, target='target')
+# feat_df = feat_df.fillna(0)
+X_train = feat_df.iloc[:len(y_train)].drop(columns=['target', 'datetime'])
+X_test = feat_df.iloc[len(y_train):].drop(columns=['target', 'datetime'])
 
 if len(y_train) == 0 or len(y_test) == 0:
     st.error("🚨 Train/Test split failed")
