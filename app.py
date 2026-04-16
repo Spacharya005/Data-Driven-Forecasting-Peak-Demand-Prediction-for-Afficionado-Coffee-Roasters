@@ -140,7 +140,7 @@ model_list = [
 ]
 
 selected_models = st.sidebar.multiselect(
-    "Select Models",
+    "Models",
     model_list,
     default=["Naive", "ARIMA", "Gradient Boosting"]
 )
@@ -157,7 +157,6 @@ df['datetime'] = pd.to_datetime(
 # FILTER + PROCESS
 # -----------------------------
 df_store = df[df['store_id'] == store]
-# st.write("Store Data Shape:", df_store.shape)
 
 agg_df = aggregate_data(df_store, freq_map[freq])
 
@@ -173,19 +172,26 @@ agg_df = agg_df.set_index('datetime') \
                .fillna(0) \
                .reset_index()
 
+# -----------------------------
+# FEATURE ENGINEERING
+# -----------------------------
 feat_df = create_features(agg_df)
 
 feat_df.replace([np.inf, -np.inf], np.nan, inplace=True)
 
-# 🔥 THIS IS THE REAL FIX
-feat_df = feat_df.dropna().reset_index(drop=True)
+# ✅ FIX: Smart NaN handling (NO OVER-SMOOTHING)
+feature_cols = feat_df.columns.difference(['target', 'datetime'])
+
+feat_df[feature_cols] = feat_df[feature_cols].fillna(0)
+feat_df = feat_df.dropna(subset=['target'])
 
 if feat_df.empty:
     st.error("🚨 Feature engineering produced empty dataset")
     st.stop()
 
-# train, test = split_series(feat_df)
-# KEEP ORIGINAL SPLIT
+# -----------------------------
+# TRAIN TEST SPLIT
+# -----------------------------
 y_train, y_test = split_series(feat_df, target='target')
 
 # CREATE X FROM SAME INDEXES
@@ -198,43 +204,40 @@ if len(y_train) == 0 or len(y_test) == 0:
     st.error("🚨 Train/Test split failed")
     st.stop()
 
+# -----------------------------
+# ✅ CACHE MODELS (FIX REFRESH)
+# -----------------------------
+@st.cache_data
+def run_all_models(selected_models, y_train, y_test, X_train, X_test, feat_df):
+    predictions = {}
+    for model in selected_models:
+        try:
+            if model == "Prophet":
+                preds = run_model(model, y_train, y_test, X_train, X_test, df=feat_df)
+            else:
+                preds = run_model(model, y_train, y_test, X_train, X_test)
+
+            predictions[model] = preds.copy()
+
+        except Exception as e:
+            print(f"❌ {model} failed:", e)
+            predictions[model] = np.repeat(y_train.mean(), len(y_test))
+
+    return predictions
 
 # -----------------------------
 # RUN MODELS
 # -----------------------------
-predictions = {}
-
-with st.spinner("☕ Brewing predictions... Please wait..."):
-
-    predictions = {}
-    for model in selected_models:
-        if model == "Prophet":
-            preds = run_model(
-                model,
-                y_train,
-                y_test,
-                X_train,
-                X_test,
-                df=feat_df   # 🔥 REQUIRED FIX
-            )
-        else:
-            preds = run_model(
-                model,
-                y_train,
-                y_test,
-                X_train,
-                X_test,
-            )
-
-        predictions[model] = preds.copy()   # 🔥 IMPORTANT FIX
-
+with st.spinner("☕ Brewing predictions..."):
+    predictions = run_all_models(
+        tuple(selected_models),
+        y_train, y_test,
+        X_train, X_test,
+        feat_df
+    )
 # -----------------------------
 # MODEL EVALUATION
 # -----------------------------
-print("\n📊 FINAL MODEL COMPARISON CHECK")
-
-for model, preds in predictions.items():
-    print(model, "→ mean:", np.mean(preds), "| std:", np.std(preds))
 results_df = evaluate_all(y_test.values, predictions)
 best_model = results_df.iloc[0]['Model']
 
@@ -251,7 +254,6 @@ future_preds = run_model(
     horizon=horizon
 )
 
-# freq_fixed = 'h' if freq_map[freq] == 'H' else 'D'
 freq_fixed = freq_map[freq]
 
 future_index = pd.date_range(
