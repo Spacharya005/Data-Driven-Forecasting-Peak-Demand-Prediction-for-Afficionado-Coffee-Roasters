@@ -200,20 +200,46 @@ predictions = {}
 with st.spinner("☕ Brewing predictions... Please wait..."):
 
     predictions = {}
-
+    print("\n🔍 Checking NaNs in data...")
+    print("X_train NaNs:", X_train.isna().sum().sum())
+    print("X_test NaNs:", X_test.isna().sum().sum())
     for model in selected_models:
-        preds = run_model(
-            model,
-            y_train,
-            y_test,
-            X_train,
-            X_test,
-        )
-        predictions[model] = preds
+        if model == "Prophet":
+            preds = run_model(
+                model,
+                y_train,
+                y_test,
+                X_train,
+                X_test,
+                df=feat_df   # 🔥 REQUIRED FIX
+            )
+        else:
+            preds = run_model(
+                model,
+                y_train,
+                y_test,
+                X_train,
+                X_test,
+            )
+
+        # 🔍 DEBUG 1: check if model failed (fallback detection)
+        print(f"\n🔎 Model: {model}")
+        print("First 5 predictions:", preds[:5])
+        print("Mean prediction:", np.mean(preds))
+
+        # 🔍 DEBUG 2: check if predictions are constant (fallback pattern)
+        if np.all(preds == preds[0]):
+            print(f"⚠️ {model} is returning CONSTANT predictions (likely fallback)")
+
+        predictions[model] = preds.copy()   # 🔥 IMPORTANT FIX
 
 # -----------------------------
 # MODEL EVALUATION
 # -----------------------------
+print("\n📊 FINAL MODEL COMPARISON CHECK")
+
+for model, preds in predictions.items():
+    print(model, "→ mean:", np.mean(preds), "| std:", np.std(preds))
 results_df = evaluate_all(y_test.values, predictions)
 best_model = results_df.iloc[0]['Model']
 

@@ -178,7 +178,8 @@ def run_model(model_name, train, test=None, X_train=None, X_test=None, df=None, 
             return np.repeat(train.mean(), len(test))
 
     except Exception as e:
-        print(f"⚠️ {model_name} failed:", e)
+        print(f"❌ {model_name} FAILED → using fallback")
+        print("Error:", e)
 
         if test is not None:
             return np.repeat(train.mean(), len(test))
