@@ -174,8 +174,10 @@ agg_df = agg_df.set_index('datetime') \
                .reset_index()
 
 feat_df = create_features(agg_df)
-# st.write("After Feature Engineering:", feat_df.shape)
-feat_df = feat_df.fillna(0)
+
+# 🔥 FORCE CLEANING HERE (CRITICAL FIX)
+feat_df.replace([np.inf, -np.inf], np.nan, inplace=True)
+feat_df.fillna(0, inplace=True)
 if feat_df.empty:
     st.error("🚨 Feature engineering produced empty dataset")
     st.stop()
@@ -185,6 +187,9 @@ y_train, y_test = split_series(feat_df, target='target')
 # feat_df = feat_df.fillna(0)
 X_train = feat_df.iloc[:len(y_train)].drop(columns=['target', 'datetime'])
 X_test = feat_df.iloc[len(y_train):].drop(columns=['target', 'datetime'])
+X_train = X_train.replace([np.inf, -np.inf], np.nan)
+X_test = X_test.replace([np.inf, -np.inf], np.nan)
+
 X_train = X_train.fillna(0)
 X_test = X_test.fillna(0)
 
