@@ -185,10 +185,14 @@ if feat_df.empty:
     st.stop()
 
 # train, test = split_series(feat_df)
+# KEEP ORIGINAL SPLIT
 y_train, y_test = split_series(feat_df, target='target')
-# feat_df = feat_df.fillna(0)
-X_train = feat_df.iloc[:len(y_train)].drop(columns=['target', 'datetime'])
-X_test = feat_df.iloc[len(y_train):].drop(columns=['target', 'datetime'])
+
+# CREATE X FROM SAME INDEXES
+X = feat_df.drop(columns=['target', 'datetime'])
+
+X_train = X.iloc[:len(y_train)]
+X_test = X.iloc[len(y_train):]
 
 if len(y_train) == 0 or len(y_test) == 0:
     st.error("🚨 Train/Test split failed")
