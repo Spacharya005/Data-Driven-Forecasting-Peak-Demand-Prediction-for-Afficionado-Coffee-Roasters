@@ -8,10 +8,13 @@ def evaluate_all(y_true, predictions_dict):
 
     for model, preds in predictions_dict.items():
 
-        mae = mean_absolute_error(y_true, preds)
-        rmse = np.sqrt(mean_squared_error(y_true, preds))
+        y_true_arr = np.array(y_true)
+        preds_arr = np.array(preds)
+
+        mae = mean_absolute_error(y_true_arr, preds_arr)
+        rmse = np.sqrt(mean_squared_error(y_true_arr, preds_arr))
         mape = np.mean(
-            np.abs((y_true - preds) / np.where(y_true == 0, 1, y_true))
+            np.abs((y_true_arr - preds_arr) / np.where(y_true_arr == 0, 1, y_true_arr))
         ) * 100
 
         results.append({
