@@ -182,10 +182,11 @@ if feat_df.empty:
 
 # train, test = split_series(feat_df)
 y_train, y_test = split_series(feat_df, target='target')
-feat_df = feat_df.fillna(0)
+# feat_df = feat_df.fillna(0)
 X_train = feat_df.iloc[:len(y_train)].drop(columns=['target', 'datetime'])
 X_test = feat_df.iloc[len(y_train):].drop(columns=['target', 'datetime'])
-
+X_train = X_train.fillna(0)
+X_test = X_test.fillna(0)
 
 if len(y_train) == 0 or len(y_test) == 0:
     st.error("🚨 Train/Test split failed")
