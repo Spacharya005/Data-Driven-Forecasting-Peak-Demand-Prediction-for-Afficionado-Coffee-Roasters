@@ -36,7 +36,11 @@ def gradient_boosting_model(X_train, y_train, X_test):
     model = GradientBoostingRegressor(
         n_estimators=200,
         learning_rate=0.05,
-        max_depth=5,
+        max_depth=3,          # 🔥 reduce complexity
+        subsample=0.8,
+        validation_fraction=0.1,       # 🔥 hold-out validation
+        n_iter_no_change=10,           # 🔥 early stopping trigger
+        tol=1e-4,  
         random_state=42
     )
 
