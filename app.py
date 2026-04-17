@@ -207,7 +207,7 @@ if len(y_train) == 0 or len(y_test) == 0:
 # -----------------------------
 # ✅ CACHE MODELS (FIX REFRESH)
 # -----------------------------
-@st.cache_data(ttl=3600)  # Cache for 1 hour
+@st.cache_data(ttl=3600, show_spinner=False)  # Cache for 1 hour
 def run_all_models(selected_models, y_train, y_test, X_train, X_test, feat_df):
     predictions = {}
     for model in selected_models:
@@ -248,7 +248,7 @@ future_preds = run_model(
     best_model,
     y_train,
     None,
-    None,
+    X_train,
     None,
     df=feat_df,
     horizon=horizon
@@ -257,7 +257,7 @@ future_preds = run_model(
 freq_fixed = freq_map[freq]
 
 future_index = pd.date_range(
-    start=agg_df['datetime'].max()+ pd.Timedelta(1, unit=freq_fixed),
+    start=agg_df['datetime'].max(),
     periods=horizon + 1,
     freq=freq_fixed
 )[1:]
@@ -393,7 +393,10 @@ with tab3:
 
     st.success(f"🔥 Peak demand expected around {peak_hour}:00 hours")
     st.subheader("Demand Spike Detection")
-    spikes = detect_spikes(y_test)
+    if len(y_test) > 5:
+        spikes = detect_spikes(y_test)
+    else:
+        spikes = pd.Series()
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(
