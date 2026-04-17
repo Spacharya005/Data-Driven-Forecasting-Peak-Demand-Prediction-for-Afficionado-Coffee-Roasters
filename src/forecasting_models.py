@@ -174,17 +174,37 @@ def run_model(model_name, train, test=None, X_train=None, X_test=None, df=None, 
         # ----------------------
         elif model_name == "Gradient Boosting":
 
-            # 🚨 CASE 1: TEST PREDICTION (works fine)
-            if X_train is not None and X_test is not None:
-                return gradient_boosting_model(X_train, train, X_test)
+            # TRAIN
+            model = GradientBoostingRegressor(
+                n_estimators=200,
+                learning_rate=0.05,
+                max_depth=5,
+                random_state=42
+            )
+            model.fit(X_train, train.values)
 
-            # 🚨 CASE 2: FUTURE FORECAST (currently broken)
-            elif horizon is not None:
-                print("⚠️ Gradient Boosting cannot generate future features → fallback to naive")
-                return np.repeat(train.iloc[-1], horizon)
+            # 🔥 CASE 1: Normal test prediction
+            if X_test is not None:
+                return model.predict(X_test)
 
-            else:
-                return np.repeat(train.mean(), len(test))
+            # 🔥 CASE 2: Future forecasting (AUTO REGRESSIVE)
+            if horizon is not None:
+                preds = []
+                history = list(train.values)
+
+                for i in range(horizon):
+                    # create simple lag features manually
+                    lag_1 = history[-1]
+                    lag_24 = history[-24] if len(history) >= 24 else lag_1
+
+                    row = np.array([[lag_1, lag_24]])
+
+                    pred = model.predict(row)[0]
+                    preds.append(pred)
+
+                    history.append(pred)
+
+                return np.array(preds)
 
     except Exception as e:
         print(f"❌ {model_name} FAILED → using fallback")
