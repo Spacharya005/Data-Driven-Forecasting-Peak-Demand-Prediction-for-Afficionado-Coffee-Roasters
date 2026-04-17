@@ -200,6 +200,9 @@ feature_cols = feat_df.columns.difference(['target', 'datetime'])
 feat_df[feature_cols] = feat_df[feature_cols].ffill().fillna(0)
 feat_df = feat_df.dropna(subset=['target'])
 
+leakage_cols = [col for col in feat_df.columns if 'target' in col and col != 'target']
+feat_df = feat_df.drop(columns=leakage_cols, errors='ignore')
+
 if feat_df.empty:
     st.error("🚨 Feature engineering produced empty dataset")
     st.stop()
@@ -212,8 +215,10 @@ y_train, y_test = split_series(feat_df, target='target')
 # CREATE X FROM SAME INDEXES
 X = feat_df.drop(columns=['target', 'datetime'])
 
-X_train = X.iloc[:len(y_train)]
-X_test = X.iloc[len(y_train):]
+# X_train = X.iloc[:len(y_train)]
+# X_test = X.iloc[len(y_train):]
+X_train = X.loc[y_train.index]
+X_test = X.loc[y_test.index]
 
 if len(y_train) == 0 or len(y_test) == 0:
     st.error("🚨 Train/Test split failed")
@@ -256,6 +261,11 @@ with st.spinner("☕ Brewing predictions..."):
 if not predictions:
     st.error("No valid model predictions available")
     st.stop()
+
+for model, preds in predictions.items():
+    print(model, "First 5 preds:", preds[:5])
+    print(model, "First 5 actual:", y_test.values[:5])
+
 # -----------------------------
 # MODEL EVALUATION
 # -----------------------------
