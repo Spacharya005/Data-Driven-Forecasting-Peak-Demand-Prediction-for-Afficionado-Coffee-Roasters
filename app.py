@@ -119,7 +119,7 @@ store = st.sidebar.selectbox(
 )
 
 freq = st.sidebar.selectbox(
-    "Granularity",
+    "Time Aggregation Level",
     ["Hourly", "Daily"]
 )
 metric_type = st.sidebar.radio(
@@ -172,6 +172,8 @@ def process_data(df, store, freq, metric_type):
 df_store = df[df['store_id'] == store]
 
 agg_df = process_data(df, store, freq_map[freq], metric_type)
+agg_df.replace([np.inf, -np.inf], np.nan, inplace=True)
+agg_df.fillna(0, inplace=True)
 
 if metric_type == "Quantity":
     agg_df['target'] = agg_df['transaction_qty']
@@ -251,6 +253,9 @@ with st.spinner("☕ Brewing predictions..."):
         X_train, X_test,
         feat_df
     )
+if not predictions:
+    st.error("No valid model predictions available")
+    st.stop()
 # -----------------------------
 # MODEL EVALUATION
 # -----------------------------
@@ -320,8 +325,8 @@ with tab1:
     std = np.std(residuals)
 
     upper = preds + 1.96 * std
-    lower = preds - 1.96 * std
-    
+    # lower = preds - 1.96 * std
+    lower = np.maximum(preds - 1.96 * std, 0)
     # fig.add_trace(go.Scatter(y=upper, line=dict(width=0), showlegend=False))
     fig.add_trace(go.Scatter(
         x=y_test.index,
@@ -358,6 +363,8 @@ with tab1:
     st.plotly_chart(fig, use_container_width=True)
 
     st.subheader(f"{best_model} Forecast for Store {store}")
+    st.info("📌 Note: Negative demand predictions are clipped to zero for business realism.")
+
 # =============================
 # 📊 TAB 2: MODEL COMPARISON
 # =============================
@@ -370,7 +377,9 @@ with tab2:
     col1.metric("Best Model", best_model)
     col2.metric("RMSE", round(results_df.iloc[0]['RMSE'], 2))
     col3.metric("MAPE (%)", round(results_df.iloc[0]['MAPE'], 2))
-
+    st.caption("MAPE = Mean Absolute Percentage Error (lower is better)")
+    col4 = st.columns(1)[0]
+    col4.metric("MAE", round(results_df.iloc[0]['MAE'], 2))
     st.dataframe(results_df)
 
     fig = px.bar(results_df, x='Model', y='RMSE')
@@ -477,8 +486,24 @@ with tab3:
         )
 
         st.plotly_chart(fig, use_container_width=True)
+        st.caption("Heatmap shows expected demand intensity by hour and day")
     else:
         st.warning("Not enough data for heatmap")
+    st.subheader("Model Insight")
+
+    st.info(f"""
+    📊 The best performing model is **{best_model}**
+
+    - Selected based on lowest error (MAPE & RMSE)
+    - Captures demand patterns effectively
+    - Recommended for operational planning
+
+    👉 Use this forecast to:
+    - Align staffing with peak hours
+    - Optimize inventory
+    - Reduce wastage
+    """)
+    
     st.info("""
     📌 Business Recommendations:
     - Increase staffing during predicted peak hours
@@ -539,4 +564,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
