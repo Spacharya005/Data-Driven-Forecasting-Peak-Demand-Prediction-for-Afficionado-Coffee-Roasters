@@ -152,13 +152,26 @@ df['datetime'] = pd.to_datetime(
     format='%Y-%m-%d %H:%M:%S',
     errors='coerce'
 )
+@st.cache_data
+def process_data(df, store, freq, metric_type):
+    df_store = df[df['store_id'] == store]
+    agg_df = aggregate_data(df_store, freq)
+
+    if metric_type == "Quantity":
+        agg_df['target'] = agg_df['transaction_qty']
+    else:
+        agg_df['target'] = agg_df['revenue']
+
+    agg_df = agg_df.set_index('datetime').asfreq(freq).fillna(0).reset_index()
+
+    return agg_df
 
 # -----------------------------
 # FILTER + PROCESS
 # -----------------------------
 df_store = df[df['store_id'] == store]
 
-agg_df = aggregate_data(df_store, freq_map[freq])
+agg_df = process_data(df, store, freq_map[freq], metric_type)
 
 if metric_type == "Quantity":
     agg_df['target'] = agg_df['transaction_qty']
@@ -207,7 +220,10 @@ if len(y_train) == 0 or len(y_test) == 0:
 # -----------------------------
 # ✅ CACHE MODELS (FIX REFRESH)
 # -----------------------------
-@st.cache_data(ttl=3600, show_spinner=False)  # Cache for 1 hour
+@st.cache_data(ttl=3600, hash_funcs={
+    pd.DataFrame: lambda x: x.shape,
+    pd.Series: lambda x: x.shape
+}) # Cache for 1 hour
 def run_all_models(selected_models, y_train, y_test, X_train, X_test, feat_df):
     predictions = {}
     for model in selected_models:
