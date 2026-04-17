@@ -267,7 +267,7 @@ with st.spinner("☕ Brewing predictions..."):
         tuple(selected_models),
         y_train, y_test,
         X_train, X_test,
-        feat_df
+        train_feat
     )
 if not predictions:
     st.error("No valid model predictions available")
@@ -292,7 +292,7 @@ future_preds = run_model(
     None,
     X_train,
     None,
-    df=feat_df,
+    df=train_feat,
     horizon=horizon
 )
 
