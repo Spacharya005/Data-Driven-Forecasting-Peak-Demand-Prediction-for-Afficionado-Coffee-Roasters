@@ -267,8 +267,8 @@ for model, preds in predictions.items():
 results_df = evaluate_all(y_test.values, predictions)
 best_model = results_df.iloc[0]['Model']
 # prevent near-perfect leakage cases
-if np.allclose(preds, y_true, atol=1e-5):
-    print(f"⚠️ {model} suspiciously perfect → possible leakage")
+# if np.allclose(preds, y_true, atol=1e-5):
+#     print(f"⚠️ {model} suspiciously perfect → possible leakage")
 # -----------------------------
 # FUTURE FORECAST
 # -----------------------------

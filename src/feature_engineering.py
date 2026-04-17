@@ -56,6 +56,6 @@ def create_features(df):
     df['day_of_week'] = df['datetime'].dt.dayofweek
 
     # 🔥 CRITICAL FIX → DO NOT DROP EVERYTHING
-    df = df.dropna(subset=['lag_1']).reset_index(drop=True)
+    df = df.dropna().reset_index(drop=True)
 
     return df

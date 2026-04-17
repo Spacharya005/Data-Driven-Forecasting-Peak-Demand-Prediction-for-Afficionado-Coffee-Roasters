@@ -44,7 +44,9 @@ def evaluate_all(y_true, predictions_dict):
     y_true_arr = np.array(y_true)
 
     for model, preds in predictions_dict.items():
-
+        if np.allclose(preds, y_true, atol=1e-5):
+            print(f"⚠️ {model} suspiciously perfect → possible leakage")
+        
         preds_arr = np.array(preds)
 
         mae = mean_absolute_error(y_true_arr, preds_arr)
