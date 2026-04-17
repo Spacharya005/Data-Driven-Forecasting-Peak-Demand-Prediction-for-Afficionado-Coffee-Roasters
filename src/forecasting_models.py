@@ -27,16 +27,22 @@ def naive_forecast(train, test):
 
 def gradient_boosting_model(X_train, y_train, X_test):
 
-    model = GradientBoostingRegressor(
-    n_estimators=200,
-    learning_rate=0.05,
-    max_depth=5,
-    random_state=42)
-    model.fit(X_train, y_train)
+    if X_train.shape[0] != len(y_train):
+        raise ValueError("Mismatch between X_train and y_train")
 
+    if X_test.shape[1] != X_train.shape[1]:
+        raise ValueError("Feature mismatch between train and test")
+
+    model = GradientBoostingRegressor(
+        n_estimators=200,
+        learning_rate=0.05,
+        max_depth=5,
+        random_state=42
+    )
+
+    model.fit(X_train, y_train)
     preds = model.predict(X_test)
-    print("X_train shape:", X_train.shape)
-    print("X_test shape:", X_test.shape)
+
     return preds
 
 # -------------------------------
@@ -168,14 +174,17 @@ def run_model(model_name, train, test=None, X_train=None, X_test=None, df=None, 
         # ----------------------
         elif model_name == "Gradient Boosting":
 
-            if X_train is None or X_test is None:
-                return np.repeat(train.mean(), horizon)
-            return gradient_boosting_model(X_train, train.values, X_test)
-        # ----------------------
-        # DEFAULT
-        # ----------------------
-        else:
-            return np.repeat(train.mean(), len(test))
+            # 🚨 CASE 1: TEST PREDICTION (works fine)
+            if X_train is not None and X_test is not None:
+                return gradient_boosting_model(X_train, train.values, X_test)
+
+            # 🚨 CASE 2: FUTURE FORECAST (currently broken)
+            elif horizon is not None:
+                print("⚠️ Gradient Boosting cannot generate future features → fallback to naive")
+                return np.repeat(train.iloc[-1], horizon)
+
+            else:
+                return np.repeat(train.mean(), len(test))
 
     except Exception as e:
         print(f"❌ {model_name} FAILED → using fallback")
