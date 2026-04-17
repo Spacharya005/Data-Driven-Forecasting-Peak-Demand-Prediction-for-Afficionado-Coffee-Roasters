@@ -1,27 +1,3 @@
-# def create_features(df):
-#     df = df.copy()
-
-#     # Ensure target exists
-#     if 'target' not in df.columns:
-#         raise ValueError("❌ 'target' column missing BEFORE feature engineering")
-
-#     # Lag features
-#     df['lag_1'] = df['target'].shift(1)
-#     df['lag_24'] = df['target'].shift(24)
-#     df['lag_168'] = df['target'].shift(168)
-
-#     # Rolling features
-#     df['rolling_mean_3'] = df['target'].rolling(3).mean()
-#     df['rolling_mean_7'] = df['target'].rolling(7).mean()
-
-#     # Time features
-#     df['hour'] = df['datetime'].dt.hour
-#     df['day_of_week'] = df['datetime'].dt.dayofweek
-
-#     # ✅ IMPORTANT: Drop AFTER all features
-#     df = df.dropna().reset_index(drop=True)
-
-#     return df
 
 def create_features(df):
     df = df.copy()

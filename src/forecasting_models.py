@@ -176,7 +176,7 @@ def run_model(model_name, train, test=None, X_train=None, X_test=None, df=None, 
 
             # 🚨 CASE 1: TEST PREDICTION (works fine)
             if X_train is not None and X_test is not None:
-                return gradient_boosting_model(X_train, train.values, X_test)
+                return gradient_boosting_model(X_train, train, X_test)
 
             # 🚨 CASE 2: FUTURE FORECAST (currently broken)
             elif horizon is not None:

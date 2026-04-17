@@ -191,6 +191,8 @@ agg_df = agg_df.set_index('datetime') \
 # FEATURE ENGINEERING
 # -----------------------------
 feat_df = create_features(agg_df)
+leakage_cols = [col for col in feat_df.columns if 'target' in col and col != 'target']
+feat_df = feat_df.drop(columns=leakage_cols, errors='ignore')
 
 feat_df.replace([np.inf, -np.inf], np.nan, inplace=True)
 
@@ -200,8 +202,6 @@ feature_cols = feat_df.columns.difference(['target', 'datetime'])
 feat_df[feature_cols] = feat_df[feature_cols].ffill().fillna(0)
 feat_df = feat_df.dropna(subset=['target'])
 
-leakage_cols = [col for col in feat_df.columns if 'target' in col and col != 'target']
-feat_df = feat_df.drop(columns=leakage_cols, errors='ignore')
 
 if feat_df.empty:
     st.error("🚨 Feature engineering produced empty dataset")
@@ -215,8 +215,6 @@ y_train, y_test = split_series(feat_df, target='target')
 # CREATE X FROM SAME INDEXES
 X = feat_df.drop(columns=['target', 'datetime'])
 
-# X_train = X.iloc[:len(y_train)]
-# X_test = X.iloc[len(y_train):]
 X_train = X.loc[y_train.index]
 X_test = X.loc[y_test.index]
 
