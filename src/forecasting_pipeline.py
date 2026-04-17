@@ -52,12 +52,18 @@ def aggregate_data(df, freq='D'):
 
     return grouped
 
-def split_series(df, target='transaction_qty'):
+def split_series(df, target='target', test_size=0.2, return_df=False):
 
-    split = int(len(df) * 0.8)
+    split_index = int(len(df) * (1 - test_size))
 
-    train = df[target].iloc[:split]
-    test = df[target].iloc[split:]
+    if return_df:
+        train_df = df.iloc[:split_index].copy()
+        test_df = df.iloc[split_index:].copy()
+        return train_df, test_df
+
+    # Existing behavior (DO NOT BREAK)
+    train = df[target].iloc[:split_index]
+    test = df[target].iloc[split_index:]
 
     return train, test
 
