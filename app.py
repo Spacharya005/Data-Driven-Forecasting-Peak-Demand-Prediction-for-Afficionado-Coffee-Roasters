@@ -190,33 +190,46 @@ agg_df = agg_df.set_index('datetime') \
 # -----------------------------
 # FEATURE ENGINEERING
 # -----------------------------
-feat_df = create_features(agg_df)
-leakage_cols = [col for col in feat_df.columns if 'target' in col and col != 'target']
-feat_df = feat_df.drop(columns=leakage_cols, errors='ignore')
+# feat_df = create_features(agg_df)
+# leakage_cols = [col for col in feat_df.columns if 'target' in col and col != 'target']
+# feat_df = feat_df.drop(columns=leakage_cols, errors='ignore')
 
-feat_df.replace([np.inf, -np.inf], np.nan, inplace=True)
+# feat_df.replace([np.inf, -np.inf], np.nan, inplace=True)
 
-# ✅ FIX: Smart NaN handling (NO OVER-SMOOTHING)
-feature_cols = feat_df.columns.difference(['target', 'datetime'])
+# # ✅ FIX: Smart NaN handling (NO OVER-SMOOTHING)
+# feature_cols = feat_df.columns.difference(['target', 'datetime'])
 
-feat_df[feature_cols] = feat_df[feature_cols].ffill().fillna(0)
-feat_df = feat_df.dropna(subset=['target'])
+# feat_df[feature_cols] = feat_df[feature_cols].ffill().fillna(0)
+# feat_df = feat_df.dropna(subset=['target'])
 
 
-if feat_df.empty:
-    st.error("🚨 Feature engineering produced empty dataset")
-    st.stop()
+# if feat_df.empty:
+#     st.error("🚨 Feature engineering produced empty dataset")
+#     st.stop()
 
 # -----------------------------
 # TRAIN TEST SPLIT
 # -----------------------------
-y_train, y_test = split_series(feat_df, target='target')
+# STEP 1: split raw data first
+train_df, test_df = split_series(agg_df, target='target', return_df=True)
 
-# CREATE X FROM SAME INDEXES
-X = feat_df.drop(columns=['target', 'datetime'])
+# STEP 2: create features separately
+train_feat = create_features(train_df)
+test_feat = create_features(test_df)
 
-X_train = X.loc[y_train.index]
-X_test = X.loc[y_test.index]
+# STEP 3: clean
+for df_ in [train_feat, test_feat]:
+    df_.replace([np.inf, -np.inf], np.nan, inplace=True)
+    feature_cols = df_.columns.difference(['target', 'datetime'])
+    df_[feature_cols] = df_[feature_cols].ffill().fillna(0)
+    df_.dropna(subset=['target'], inplace=True)
+
+# STEP 4: define X/y
+y_train = train_feat['target']
+y_test = test_feat['target']
+
+X_train = train_feat.drop(columns=['target', 'datetime'])
+X_test = test_feat.drop(columns=['target', 'datetime'])
 
 if len(y_train) == 0 or len(y_test) == 0:
     st.error("🚨 Train/Test split failed")
