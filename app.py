@@ -340,17 +340,17 @@ with tab1:
 
         preds_vis = preds[-window:]
 
-    fig.add_trace(go.Scatter(
-        x=x_vis,
-        y=preds_vis,
-        mode='lines',
-        name=model,
-        line=dict(
-            width=3 if model == best_model else 2,
-            dash='solid' if model == best_model else 'dot'
-        ),
-        opacity=1 if model == best_model else 0.5
-    ))
+        fig.add_trace(go.Scatter(
+            x=x_vis,
+            y=preds_vis,
+            mode='lines',
+            name=model,
+            line=dict(
+                width=3 if model == best_model else 2,
+                dash='solid' if model == best_model else 'dot'
+            ),
+            opacity=1 if model == best_model else 0.5
+        ))
 
     best_preds = predictions[best_model][-window:]
 
