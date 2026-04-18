@@ -313,6 +313,11 @@ with tab1:
     st.subheader("Forecast vs Actual")
 
     fig = go.Figure()
+    # ✅ Reduce density (every Nth point)
+    step = max(1, len(y_test) // 200)   # keeps ~200 points max
+
+    x_plot = y_test.index[::step]
+    y_plot = y_test.values[::step]
 
     fig.add_trace(go.Scatter(
         x=y_test.index,
@@ -325,7 +330,7 @@ with tab1:
     for model, preds in predictions.items():
         fig.add_trace(go.Scatter(
             x=y_test.index,
-            y=preds,
+            y=preds[::step],
             mode='lines',
             name=model,
             line=dict(width=2, dash='dot'),   # 👈 differentiate models
@@ -344,14 +349,14 @@ with tab1:
     # fig.add_trace(go.Scatter(y=upper, line=dict(width=0), showlegend=False))
     fig.add_trace(go.Scatter(
         x=y_test.index,
-        y=upper,
+        y=upper[::step],
         line=dict(width=0),
         showlegend=False
     ))
 
     fig.add_trace(go.Scatter(
         x=y_test.index,
-        y=lower,
+        y=lower[::step],
         fill='tonexty',
         name='Confidence Interval',
         opacity=0.2,
@@ -371,7 +376,19 @@ with tab1:
             title_font=dict(color="white" if plotly_theme == "plotly_dark" else "black"),
             tickfont=dict(color="white" if plotly_theme == "plotly_dark" else "black")
         )
+        height=500,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
     )
+    fig.update_xaxes(
+            nticks=10,
+            showgrid=False
+        )
     # Add future forecast to SAME graph
 
     st.plotly_chart(fig, use_container_width=True)
