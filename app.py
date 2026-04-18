@@ -21,21 +21,12 @@ st.set_page_config(
     page_title="☕ Data-Driven Forecasting & Peak Demand Prediction for Afficionado Coffee Roasters ☕",
     layout="wide"
 )
-st.markdown("""
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-""", unsafe_allow_html=True)
-st.markdown("""
-<style>
-.block-container {
-    padding: 1rem 1rem 1rem 1rem;
-}
-</style>
-""", unsafe_allow_html=True)
+
 st.title("☕ Data-Driven Forecasting & Peak Demand Prediction for Afficionado Coffee Roasters ☕")
 
 
 # ---------------- HEADER WITH LOGOS ----------------
-col1, spacer, col2 = st.columns([2, 3, 2])
+col1, spacer, col2 = st.columns([2, 3, 2])  # middle = gap
 
 logo_height = 180
 
@@ -175,7 +166,7 @@ def process_data(df, store, freq, metric_type):
     agg_df = agg_df.set_index('datetime').asfreq(freq).fillna(0).reset_index()
 
     return agg_df
-# st.sidebar.markdown("## 📱 Controls (Mobile Friendly)")
+st.sidebar.markdown("## 📱 Controls (Mobile Friendly)")
 # -----------------------------
 # FILTER + PROCESS
 # -----------------------------
@@ -324,36 +315,20 @@ with tab1:
 
     fig = go.Figure()
 
-    # ACTUAL
     fig.add_trace(go.Scatter(
         x=y_test.index,
         y=y_test.values,
         mode='lines',
-        name='Actual',
-        line=dict(width=3)
+        name='Actual'
     ))
 
-    # BEST MODEL ONLY
-    best_preds = predictions[best_model]
-
-    fig.add_trace(go.Scatter(
-        x=y_test.index,
-        y=best_preds,
-        mode='lines',
-        name=f'{best_model} Prediction',
-        line=dict(dash='dash', width=3)
-    ))
-
-    # OPTIONAL: SHOW OTHERS AS LIGHT
     for model, preds in predictions.items():
-        if model != best_model:
-            fig.add_trace(go.Scatter(
-                x=y_test.index,
-                y=preds,
-                mode='lines',
-                name=model,
-                opacity=0.3
-            ))
+        fig.add_trace(go.Scatter(
+            x=y_test.index,
+            y=preds,
+            mode='lines',
+            name=model
+        ))
 
     # ✅ Confidence Interval (Best Model)
     preds = predictions[best_model]
