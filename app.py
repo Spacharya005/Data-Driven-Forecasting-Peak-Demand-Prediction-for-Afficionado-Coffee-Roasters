@@ -11,6 +11,9 @@ from src.forecasting_pipeline import aggregate_data, split_series
 from src.forecasting_models import run_model
 from src.evaluation import evaluate_all
 from utility import detect_spikes
+st.markdown("""
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+""", unsafe_allow_html=True)
 
 # st.write("FILES IN ROOT:", os.listdir())
 # -----------------------------
@@ -18,14 +21,20 @@ from utility import detect_spikes
 # -----------------------------
 st.set_page_config(
     page_title="☕ Data-Driven Forecasting & Peak Demand Prediction for Afficionado Coffee Roasters ☕",
-    layout="wide"
+    layout="centered"
 )
-
+st.markdown("""
+<style>
+.block-container {
+    padding: 1rem 1rem 1rem 1rem;
+}
+</style>
+""", unsafe_allow_html=True)
 st.title("☕ Data-Driven Forecasting & Peak Demand Prediction for Afficionado Coffee Roasters ☕")
 
 
 # ---------------- HEADER WITH LOGOS ----------------
-col1, spacer, col2 = st.columns([2, 3, 2])  # middle = gap
+col1,col2 = st.columns(2)  # middle = gap
 
 logo_height = 180
 
@@ -165,7 +174,7 @@ def process_data(df, store, freq, metric_type):
     agg_df = agg_df.set_index('datetime').asfreq(freq).fillna(0).reset_index()
 
     return agg_df
-
+st.sidebar.markdown("## 📱 Controls (Mobile Friendly)")
 # -----------------------------
 # FILTER + PROCESS
 # -----------------------------
@@ -198,8 +207,9 @@ train_df, test_df = split_series(agg_df, target='target', return_df=True)
 # test_feat = create_features(test_df)
 full_feat = create_features(pd.concat([train_df, test_df]))
 
-train_feat = full_feat.iloc[:len(train_df)]
-test_feat = full_feat.iloc[len(train_df):]
+train_feat = full_feat[full_feat['datetime'].isin(train_df['datetime'])]
+test_feat = full_feat[full_feat['datetime'].isin(test_df['datetime'])]
+
 
 # STEP 3: clean
 for df_ in [train_feat, test_feat]:
@@ -209,6 +219,9 @@ for df_ in [train_feat, test_feat]:
     df_.dropna(subset=['target'], inplace=True)
 
 # STEP 4: define X/y
+train_feat = train_feat.sort_values('datetime')
+test_feat = test_feat.sort_values('datetime')
+
 y_train = train_feat['target']
 y_test = test_feat['target']
 
@@ -319,7 +332,7 @@ with tab1:
 
     for model, preds in predictions.items():
         fig.add_trace(go.Scatter(
-                x=y_test.index,
+            x=y_test.index,
             y=preds,
             mode='lines',
             name=model
@@ -367,7 +380,7 @@ with tab1:
     )
     # Add future forecast to SAME graph
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, config={'responsive': True})
 
     st.subheader(f"{best_model} Forecast for Store {store}")
     st.info("📌 Note: Negative demand predictions are clipped to zero for business realism.")
@@ -403,7 +416,7 @@ with tab2:
             tickfont=dict(color="white" if plotly_theme == "plotly_dark" else "black")
         )
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, config={'responsive': True})
 
 
 # =============================
@@ -459,7 +472,7 @@ with tab3:
         )
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, config={'responsive': True})
 
     st.subheader("Future Demand Heatmap")
 
@@ -492,7 +505,7 @@ with tab3:
             )
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, config={'responsive': True})
         st.caption("Heatmap shows expected demand intensity by hour and day")
     else:
         st.warning("Not enough data for heatmap")
