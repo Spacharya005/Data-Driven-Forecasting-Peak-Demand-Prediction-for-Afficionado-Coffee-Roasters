@@ -475,7 +475,7 @@ with tab3:
         marker=dict(size=10, color='red')
     ))
 
-    fig.update_layout(
+    fig.update_layout(title="Demand with Detected Spikes",
         template=plotly_theme,
         font=dict(color="white" if plotly_theme == "plotly_dark" else "black"),
         title_font=dict(color="white" if plotly_theme == "plotly_dark" else "black"),
@@ -508,7 +508,7 @@ with tab3:
             color_continuous_scale="RdYlGn_r",
             labels=dict(color="Demand")   # ✅ FIX
         )
-        fig.update_layout(
+        fig.update_layout(title="Forecasted Demand Heatmap",
             template=plotly_theme,
             font=dict(color="white" if plotly_theme == "plotly_dark" else "black"),
             title_font=dict(color="white" if plotly_theme == "plotly_dark" else "black"),
