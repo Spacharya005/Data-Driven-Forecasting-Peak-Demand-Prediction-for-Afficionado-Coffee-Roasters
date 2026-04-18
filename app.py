@@ -340,14 +340,17 @@ with tab1:
 
         preds_vis = preds[-window:]
 
-        fig.add_trace(go.Scatter(
-            x=x_vis,
-            y=preds_vis,
-            mode='lines',
-            name=model,
-            line=dict(width=2, dash='dot'),  # differentiate models
-            opacity=0.5                      # reduce clutter
-        ))
+    fig.add_trace(go.Scatter(
+        x=x_vis,
+        y=preds_vis,
+        mode='lines',
+        name=model,
+        line=dict(
+            width=3 if model == best_model else 2,
+            dash='solid' if model == best_model else 'dot'
+        ),
+        opacity=1 if model == best_model else 0.5
+    ))
 
     best_preds = predictions[best_model][-window:]
 
@@ -384,9 +387,10 @@ with tab1:
     ))
 
     # ✅ CLEAN LAYOUT
-    fig.update_layout(
+    fig.update_layout(title="Forecast vs Actual",
         template=plotly_theme,
         height=450,
+        hovermode="x unified",
         showlegend=True,
         legend=dict(orientation="h", y=1.02),
         xaxis=dict(showgrid=False),
