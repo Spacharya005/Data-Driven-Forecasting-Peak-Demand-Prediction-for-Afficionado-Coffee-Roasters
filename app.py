@@ -224,6 +224,8 @@ y_test = test_feat['target']
 
 X_train = train_feat.drop(columns=['target', 'datetime'])
 X_test = test_feat.drop(columns=['target', 'datetime'])
+# ✅ Ensure feature names are preserved (fix sklearn warning)
+X_test = pd.DataFrame(X_test, columns=X_train.columns)
 
 if len(y_train) == 0 or len(y_test) == 0:
     st.error("🚨 Train/Test split failed")
