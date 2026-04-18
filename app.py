@@ -203,10 +203,16 @@ test_feat = full_feat[full_feat['datetime'].isin(test_df['datetime'])]
 
 
 # STEP 3: clean
+train_feat = train_feat.copy()
+test_feat = test_feat.copy()
+
 for df_ in [train_feat, test_feat]:
     df_.replace([np.inf, -np.inf], np.nan, inplace=True)
+
     feature_cols = df_.columns.difference(['target', 'datetime'])
-    df_[feature_cols] = df_[feature_cols].ffill().fillna(0)
+
+    df_.loc[:, feature_cols] = df_[feature_cols].ffill().fillna(0)
+
     df_.dropna(subset=['target'], inplace=True)
 
 # STEP 4: define X/y
