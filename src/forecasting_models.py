@@ -187,32 +187,46 @@ def run_model(model_name, train, test=None, X_train=None, X_test=None, df=None, 
                 max_features='sqrt',
                 random_state=42
             )
+            # ❗ Remove any direct leakage columns if present
+            leak_cols = [col for col in X_train.columns if 'target' in col.lower()]
+            X_train = X_train.drop(columns=leak_cols, errors='ignore')
+            X_test = X_test.drop(columns=leak_cols, errors='ignore')
             X_train = X_train.astype(float)
             X_test = X_test.astype(float)
+            # ✅ Align indices strictly (NO leakage)
+            X_train = X_train.loc[train.index]
+            X_test = X_test.loc[test.index]
+
             model.fit(X_train, train.values)
 
-            # 🔥 CASE 1: Normal test prediction
-            if X_test is not None:
-                return model.predict(X_test)
+            preds = model.predict(X_test)
 
-            # 🔥 CASE 2: Future forecasting (AUTO REGRESSIVE)
-            if horizon is not None:
-                preds = []
-                history = list(train.values)
+            # ✅ Light smoothing (safe)
+            preds = pd.Series(preds).rolling(window=3, min_periods=1).mean().values
 
-                for i in range(horizon):
-                    # create simple lag features manually
-                    lag_1 = history[-1]
-                    lag_24 = history[-24] if len(history) >= 24 else lag_1
+            # ✅ Clip negatives (business safe)
+            preds = np.clip(preds, 0, None)
 
-                    row = np.array([[lag_1, lag_24]])
+            return preds
 
-                    pred = model.predict(row)[0]
-                    preds.append(pred)
+            # # 🔥 CASE 2: Future forecasting (AUTO REGRESSIVE)
+            # if horizon is not None:
+            #     preds = []
+            #     history = list(train.values)
 
-                    history.append(pred)
+            #     for i in range(horizon):
+            #         # create simple lag features manually
+            #         lag_1 = history[-1]
+            #         lag_24 = history[-24] if len(history) >= 24 else lag_1
 
-                return np.array(preds)
+            #         row = np.array([[lag_1, lag_24]])
+
+            #         pred = model.predict(row)[0]
+            #         preds.append(pred)
+
+            #         history.append(pred)
+
+            #     return np.array(preds)
 
     except Exception as e:
         print(f"❌ {model_name} FAILED → using fallback")
