@@ -355,14 +355,6 @@ with tab1:
     best_preds = predictions[best_model][-window:]
 
 
-    # fig.add_trace(go.Scatter(
-    #     x=x_vis,
-    #     y=best_preds,
-    #     mode='lines',
-    #     name=best_model,
-    #     line=dict(width=3, color='blue')
-    # ))
-
     # ✅ Confidence Interval (clean & light)
     residuals = y_test.values[-window:] - best_preds
     std = np.std(residuals)
@@ -453,7 +445,7 @@ with tab3:
 
     peak_hour = future_df.groupby('hour')['target'].mean().idxmax()
 
-    st.success(f"🔥 Peak demand expected around {peak_hour}:00 (based on forecasted patterns)")
+    # st.success(f"🔥 Peak demand expected around {peak_hour}:00 (based on forecasted patterns)")
     st.subheader("Demand Spike Detection")
     if len(y_test) > 5:
         spikes = detect_spikes(y_test)
