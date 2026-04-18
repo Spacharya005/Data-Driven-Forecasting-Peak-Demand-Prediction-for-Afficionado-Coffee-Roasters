@@ -324,20 +324,30 @@ with tab1:
 
     fig = go.Figure()
 
+    # Actual
     fig.add_trace(go.Scatter(
         x=y_test.index,
         y=y_test.values,
-        mode='lines',
-        name='Actual'
+        mode='lines+markers',
+        name='Actual',
+        line=dict(width=3)
     ))
 
-    for model, preds in predictions.items():
-        fig.add_trace(go.Scatter(
-            x=y_test.index,
-            y=preds,
-            mode='lines',
-            name=model
-        ))
+    # Best model only (clean visualization)
+    best_preds = predictions[best_model]
+
+    fig.add_trace(go.Scatter(
+        x=y_test.index,
+        y=best_preds,
+        mode='lines+markers',
+        name=f'{best_model} Prediction',
+        line=dict(dash='dash', width=3)
+    ))
+    fig.update_layout(
+        title="Actual vs Predicted Demand",
+        xaxis_title="Time",
+        yaxis_title="Demand"
+    )
 
     # ✅ Confidence Interval (Best Model)
     preds = predictions[best_model]
