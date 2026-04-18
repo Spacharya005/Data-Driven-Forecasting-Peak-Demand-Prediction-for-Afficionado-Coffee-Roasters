@@ -355,13 +355,13 @@ with tab1:
     best_preds = predictions[best_model][-window:]
 
 
-    fig.add_trace(go.Scatter(
-        x=x_vis,
-        y=best_preds,
-        mode='lines',
-        name=best_model,
-        line=dict(width=3, color='blue')
-    ))
+    # fig.add_trace(go.Scatter(
+    #     x=x_vis,
+    #     y=best_preds,
+    #     mode='lines',
+    #     name=best_model,
+    #     line=dict(width=3, color='blue')
+    # ))
 
     # ✅ Confidence Interval (clean & light)
     residuals = y_test.values - predictions[best_model]
