@@ -36,14 +36,14 @@ def gradient_boosting_model(X_train, y_train, X_test):
     model = GradientBoostingRegressor(
         n_estimators=200,
         learning_rate=0.05,
-        max_depth=3,          # 🔥 reduce complexity
+        max_depth=3,          
         subsample=0.8,
         random_state=42
     )
 
     model.fit(X_train, y_train)
     preds = model.predict(X_test)
-# ✅ Smooth predictions (reduces noise, boosts metrics)
+#  Smooth predictions (reduces noise, boosts metrics)
     preds = pd.Series(preds).rolling(window=3, min_periods=1).mean().values
     return preds
 
@@ -56,7 +56,6 @@ import numpy as np
 
 def arima_forecast(train, test):
 
-    # ✅ Always inside try
     try:
         train = train.dropna()
 
@@ -67,7 +66,7 @@ def arima_forecast(train, test):
             return np.repeat(train.iloc[-1], len(test))
 
         model = ARIMA(train, order=(1,1,1))
-        model_fit = model.fit()   # ✅ INSIDE try
+        model_fit = model.fit()   
 
         forecast = model_fit.forecast(steps=len(test))
 
@@ -86,7 +85,7 @@ def exp_smoothing_forecast(train, test):
         train,
         trend='add',
         seasonal='add',
-        seasonal_periods=24   # 🔥 for hourly data
+        seasonal_periods=24   
     )
 
     model_fit = model.fit()
@@ -133,8 +132,7 @@ def moving_average_forecast(train, test, window=3):
     for t in range(len(test)):
         pred = np.mean(history[-window:])
         preds.append(pred)
-        history.append(pred)   # 🔥 FIX (use prediction, not actual)
-
+        history.append(pred)   
     return np.array(preds)
 
 
@@ -187,7 +185,7 @@ def run_model(model_name, train, test=None, X_train=None, X_test=None, df=None, 
                 max_features='sqrt',
                 random_state=42
             )
-            # ❗ Remove any direct leakage columns if present
+            #  Remove any direct leakage columns if present
             leak_cols = [col for col in X_train.columns if 'target' in col.lower()]
             X_train = X_train.drop(columns=leak_cols, errors='ignore')
             X_test = X_test.drop(columns=leak_cols, errors='ignore')
@@ -209,24 +207,6 @@ def run_model(model_name, train, test=None, X_train=None, X_test=None, df=None, 
 
             return preds
 
-            # # 🔥 CASE 2: Future forecasting (AUTO REGRESSIVE)
-            # if horizon is not None:
-            #     preds = []
-            #     history = list(train.values)
-
-            #     for i in range(horizon):
-            #         # create simple lag features manually
-            #         lag_1 = history[-1]
-            #         lag_24 = history[-24] if len(history) >= 24 else lag_1
-
-            #         row = np.array([[lag_1, lag_24]])
-
-            #         pred = model.predict(row)[0]
-            #         preds.append(pred)
-
-            #         history.append(pred)
-
-            #     return np.array(preds)
 
     except Exception as e:
         print(f"❌ {model_name} FAILED → using fallback")

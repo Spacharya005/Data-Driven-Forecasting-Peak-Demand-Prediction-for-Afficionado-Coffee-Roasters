@@ -13,7 +13,6 @@ from src.evaluation import evaluate_all
 from utility import detect_spikes
 
 
-# st.write("FILES IN ROOT:", os.listdir())
 # -----------------------------
 # PAGE CONFIG
 # -----------------------------
@@ -180,12 +179,13 @@ if metric_type == "Quantity":
 else:
     agg_df['target'] = agg_df['revenue']
 
-# st.write("After target creation:", agg_df.columns)
+
 # ✅ PRD FIX: continuous time index
 agg_df = agg_df.set_index('datetime') \
                .asfreq(freq_map[freq]) \
                .fillna(0) \
                .reset_index()
+
 
 # -----------------------------
 # TRAIN TEST SPLIT
@@ -194,8 +194,6 @@ agg_df = agg_df.set_index('datetime') \
 train_df, test_df = split_series(agg_df, target='target', return_df=True)
 
 # STEP 2: create features separately
-# train_feat = create_features(train_df)
-# test_feat = create_features(test_df)
 full_feat = create_features(pd.concat([train_df, test_df]))
 
 train_feat = full_feat[full_feat['datetime'].isin(train_df['datetime'])]
@@ -214,6 +212,7 @@ for df_ in [train_feat, test_feat]:
     df_.loc[:, feature_cols] = df_[feature_cols].ffill().fillna(0)
 
     df_.dropna(subset=['target'], inplace=True)
+
 
 # STEP 4: define X/y
 train_feat = train_feat.sort_values('datetime')
@@ -273,14 +272,14 @@ for model, preds in predictions.items():
     print(model, "First 5 preds:", preds[:5])
     print(model, "First 5 actual:", y_test.values[:5])
 
+
 # -----------------------------
 # MODEL EVALUATION
 # -----------------------------
 results_df = evaluate_all(y_test.values, predictions)
 best_model = results_df.iloc[0]['Model']
-# prevent near-perfect leakage cases
-# if np.allclose(preds, y_true, atol=1e-5):
-#     print(f"⚠️ {model} suspiciously perfect → possible leakage")
+
+
 # -----------------------------
 # FUTURE FORECAST
 # -----------------------------
@@ -498,7 +497,7 @@ with tab3:
             text_auto=True,
             aspect="auto",
             color_continuous_scale="RdYlGn_r",
-            labels=dict(color="Demand")   # ✅ FIX
+            labels=dict(color="Demand")   
         )
         fig.update_layout(title="Forecasted Demand Heatmap",
             template=plotly_theme,
