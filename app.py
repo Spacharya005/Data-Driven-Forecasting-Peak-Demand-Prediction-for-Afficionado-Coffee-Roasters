@@ -375,7 +375,7 @@ with tab1:
         yaxis=dict(
             title_font=dict(color="white" if plotly_theme == "plotly_dark" else "black"),
             tickfont=dict(color="white" if plotly_theme == "plotly_dark" else "black")
-        )
+        ),
         height=500,
         legend=dict(
             orientation="h",
