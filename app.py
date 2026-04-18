@@ -313,83 +313,64 @@ with tab1:
     st.subheader("Forecast vs Actual")
 
     fig = go.Figure()
-    # ✅ Reduce density (every Nth point)
-    step = max(1, len(y_test) // 200)   # keeps ~200 points max
 
-    x_plot = y_test.index[::step]
-    y_plot = y_test.values[::step]
+    # ✅ Focus only on last N points (clean view)
+    window = 200
+    y_vis = y_test.iloc[-window:]
+    x_vis = y_vis.index
 
+    # ✅ Actual (clear & bold)
     fig.add_trace(go.Scatter(
-        x=y_test.index,
-        y=y_test.values,
+        x=x_vis,
+        y=y_vis.values,
         mode='lines',
         name='Actual',
-        line=dict(width=4, color='black'),   # 👈 highlight actual
+        line=dict(width=4, color='black')
     ))
 
-    for model, preds in predictions.items():
-        fig.add_trace(go.Scatter(
-            x=y_test.index,
-            y=preds[::step],
-            mode='lines',
-            name=model,
-            line=dict(width=2, dash='dot'),   # 👈 differentiate models
-            opacity=0.7                       # 👈 reduce clutter
-        ))
+    # ✅ Plot ONLY best model (reduce clutter)
+    best_preds = predictions[best_model][-window:]
 
-    # ✅ Confidence Interval (Best Model)
-    preds = predictions[best_model]
-    residuals = y_test.values - preds
+    fig.add_trace(go.Scatter(
+        x=x_vis,
+        y=best_preds,
+        mode='lines',
+        name=best_model,
+        line=dict(width=3, color='blue')
+    ))
 
+    # ✅ Confidence Interval (clean & light)
+    residuals = y_test.values - predictions[best_model]
     std = np.std(residuals)
 
-    upper = preds + 1.96 * std
-    # lower = preds - 1.96 * std
-    lower = np.maximum(preds - 1.96 * std, 0)
-    # fig.add_trace(go.Scatter(y=upper, line=dict(width=0), showlegend=False))
+    upper = best_preds + 1.96 * std
+    lower = np.maximum(best_preds - 1.96 * std, 0)
+
     fig.add_trace(go.Scatter(
-        x=y_test.index,
-        y=upper[::step],
+        x=x_vis,
+        y=upper,
         line=dict(width=0),
         showlegend=False
     ))
 
     fig.add_trace(go.Scatter(
-        x=y_test.index,
-        y=lower[::step],
+        x=x_vis,
+        y=lower,
         fill='tonexty',
         name='Confidence Interval',
-        opacity=0.2,
+        opacity=0.15,
         line=dict(width=0)
     ))
 
-
+    # ✅ CLEAN LAYOUT
     fig.update_layout(
         template=plotly_theme,
-        font=dict(color="white" if plotly_theme == "plotly_dark" else "black"),
-        title_font=dict(color="white" if plotly_theme == "plotly_dark" else "black"),
-        xaxis=dict(
-            title_font=dict(color="white" if plotly_theme == "plotly_dark" else "black"),
-            tickfont=dict(color="white" if plotly_theme == "plotly_dark" else "black")
-        ),
-        yaxis=dict(
-            title_font=dict(color="white" if plotly_theme == "plotly_dark" else "black"),
-            tickfont=dict(color="white" if plotly_theme == "plotly_dark" else "black")
-        ),
-        height=500,
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-        )
+        height=450,
+        showlegend=True,
+        legend=dict(orientation="h", y=1.02),
+        xaxis=dict(showgrid=False),
+        yaxis=dict(showgrid=True)
     )
-    fig.update_xaxes(
-            nticks=10,
-            showgrid=False
-        )
-    # Add future forecast to SAME graph
 
     st.plotly_chart(fig, use_container_width=True)
 
