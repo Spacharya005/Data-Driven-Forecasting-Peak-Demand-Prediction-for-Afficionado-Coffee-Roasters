@@ -166,7 +166,6 @@ def process_data(df, store, freq, metric_type):
     agg_df = agg_df.set_index('datetime').asfreq(freq).fillna(0).reset_index()
 
     return agg_df
-st.sidebar.markdown("## 📱 Controls (Mobile Friendly)")
 # -----------------------------
 # FILTER + PROCESS
 # -----------------------------
