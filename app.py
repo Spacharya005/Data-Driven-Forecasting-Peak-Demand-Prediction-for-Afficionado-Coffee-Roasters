@@ -318,7 +318,8 @@ with tab1:
         x=y_test.index,
         y=y_test.values,
         mode='lines',
-        name='Actual'
+        name='Actual',
+        line=dict(width=4, color='black'),   # 👈 highlight actual
     ))
 
     for model, preds in predictions.items():
@@ -326,7 +327,9 @@ with tab1:
             x=y_test.index,
             y=preds,
             mode='lines',
-            name=model
+            name=model,
+            line=dict(width=2, dash='dot'),   # 👈 differentiate models
+            opacity=0.7                       # 👈 reduce clutter
         ))
 
     # ✅ Confidence Interval (Best Model)
