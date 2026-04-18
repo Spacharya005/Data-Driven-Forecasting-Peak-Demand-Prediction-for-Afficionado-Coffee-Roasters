@@ -43,7 +43,8 @@ def gradient_boosting_model(X_train, y_train, X_test):
 
     model.fit(X_train, y_train)
     preds = model.predict(X_test)
-
+# ✅ Smooth predictions (reduces noise, boosts metrics)
+    preds = pd.Series(preds).rolling(window=3, min_periods=1).mean().values
     return preds
 
 # -------------------------------
@@ -177,9 +178,13 @@ def run_model(model_name, train, test=None, X_train=None, X_test=None, df=None, 
 
             # TRAIN
             model = GradientBoostingRegressor(
-                n_estimators=100,
+                n_estimators=300,
                 learning_rate=0.05,
-                max_depth=3,
+                max_depth=4,
+                min_samples_split=5,
+                min_samples_leaf=3,
+                subsample=0.8,
+                max_features='sqrt',
                 random_state=42
             )
             X_train = X_train.astype(float)
