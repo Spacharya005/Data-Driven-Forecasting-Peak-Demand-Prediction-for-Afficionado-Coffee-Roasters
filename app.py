@@ -19,7 +19,7 @@ from utility import detect_spikes
 # -----------------------------
 st.set_page_config(
     page_title="☕ Data-Driven Forecasting & Peak Demand Prediction for Afficionado Coffee Roasters ☕",
-    layout="centered"
+    layout="wide"
 )
 st.markdown("""
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
