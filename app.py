@@ -420,7 +420,7 @@ with tab2:
     st.dataframe(results_df)
 
     fig = px.bar(results_df, x='Model', y='RMSE')
-    fig.update_layout(
+    fig.update_layout(title="Model RMSE Comparison",
         template=plotly_theme,
         font=dict(color="white" if plotly_theme == "plotly_dark" else "black"),
         title_font=dict(color="white" if plotly_theme == "plotly_dark" else "black"),
