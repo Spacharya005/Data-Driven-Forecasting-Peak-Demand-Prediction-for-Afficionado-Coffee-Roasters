@@ -177,11 +177,13 @@ def run_model(model_name, train, test=None, X_train=None, X_test=None, df=None, 
 
             # TRAIN
             model = GradientBoostingRegressor(
-                n_estimators=200,
+                n_estimators=100,
                 learning_rate=0.05,
-                max_depth=5,
+                max_depth=3,
                 random_state=42
             )
+            X_train = X_train.astype(float)
+            X_test = X_test.astype(float)
             model.fit(X_train, train.values)
 
             # 🔥 CASE 1: Normal test prediction
