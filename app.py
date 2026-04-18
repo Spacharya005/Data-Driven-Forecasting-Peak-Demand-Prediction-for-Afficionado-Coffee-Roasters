@@ -11,9 +11,7 @@ from src.forecasting_pipeline import aggregate_data, split_series
 from src.forecasting_models import run_model
 from src.evaluation import evaluate_all
 from utility import detect_spikes
-st.markdown("""
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-""", unsafe_allow_html=True)
+
 
 # st.write("FILES IN ROOT:", os.listdir())
 # -----------------------------
@@ -23,6 +21,9 @@ st.set_page_config(
     page_title="☕ Data-Driven Forecasting & Peak Demand Prediction for Afficionado Coffee Roasters ☕",
     layout="centered"
 )
+st.markdown("""
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+""", unsafe_allow_html=True)
 # st.markdown("""
 # <style>
 # .block-container {
