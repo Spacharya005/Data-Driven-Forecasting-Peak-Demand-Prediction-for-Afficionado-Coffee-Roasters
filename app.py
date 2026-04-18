@@ -1,9 +1,4 @@
 import streamlit as st
-
-st.set_page_config(
-    page_title="☕ Data-Driven Forecasting & Peak Demand Prediction for Afficionado Coffee Roasters ☕",
-    layout="centered"
-)
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -24,13 +19,17 @@ st.markdown("""
 # -----------------------------
 # PAGE CONFIG
 # -----------------------------
-st.markdown("""
-<style>
-.block-container {
-    padding: 1rem 1rem 1rem 1rem;
-}
-</style>
-""", unsafe_allow_html=True)
+st.set_page_config(
+    page_title="☕ Data-Driven Forecasting & Peak Demand Prediction for Afficionado Coffee Roasters ☕",
+    layout="centered"
+)
+# st.markdown("""
+# <style>
+# .block-container {
+#     padding: 1rem 1rem 1rem 1rem;
+# }
+# </style>
+# """, unsafe_allow_html=True)
 st.title("☕ Data-Driven Forecasting & Peak Demand Prediction for Afficionado Coffee Roasters ☕")
 
 
