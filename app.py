@@ -336,8 +336,21 @@ with tab1:
         line=dict(width=4, color='black')
     ))
 
-    # ✅ Plot ONLY best model (reduce clutter)
+    for model, preds in predictions.items():
+
+        preds_vis = preds[-window:]
+
+        fig.add_trace(go.Scatter(
+            x=x_vis,
+            y=preds_vis,
+            mode='lines',
+            name=model,
+            line=dict(width=2, dash='dot'),  # differentiate models
+            opacity=0.5                      # reduce clutter
+        ))
+
     best_preds = predictions[best_model][-window:]
+
 
     fig.add_trace(go.Scatter(
         x=x_vis,
