@@ -364,7 +364,7 @@ with tab1:
     # ))
 
     # ✅ Confidence Interval (clean & light)
-    residuals = y_test.values - predictions[best_model]
+    residuals = y_test.values[-window:] - best_preds
     std = np.std(residuals)
 
     upper = best_preds + 1.96 * std
