@@ -1,4 +1,9 @@
 import streamlit as st
+
+st.set_page_config(
+    page_title="☕ Data-Driven Forecasting & Peak Demand Prediction for Afficionado Coffee Roasters ☕",
+    layout="centered"
+)
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -19,10 +24,6 @@ st.markdown("""
 # -----------------------------
 # PAGE CONFIG
 # -----------------------------
-st.set_page_config(
-    page_title="☕ Data-Driven Forecasting & Peak Demand Prediction for Afficionado Coffee Roasters ☕",
-    layout="centered"
-)
 st.markdown("""
 <style>
 .block-container {
