@@ -324,30 +324,20 @@ with tab1:
 
     fig = go.Figure()
 
-    # Actual
     fig.add_trace(go.Scatter(
         x=y_test.index,
         y=y_test.values,
-        mode='lines+markers',
-        name='Actual',
-        line=dict(width=3)
+        mode='lines',
+        name='Actual'
     ))
 
-    # Best model only (clean visualization)
-    best_preds = predictions[best_model]
-
-    fig.add_trace(go.Scatter(
-        x=y_test.index,
-        y=best_preds,
-        mode='lines+markers',
-        name=f'{best_model} Prediction',
-        line=dict(dash='dash', width=3)
-    ))
-    fig.update_layout(
-        title="Actual vs Predicted Demand",
-        xaxis_title="Time",
-        yaxis_title="Demand"
-    )
+    for model, preds in predictions.items():
+        fig.add_trace(go.Scatter(
+            x=y_test.index,
+            y=preds,
+            mode='lines',
+            name=model
+        ))
 
     # ✅ Confidence Interval (Best Model)
     preds = predictions[best_model]
@@ -391,7 +381,7 @@ with tab1:
     )
     # Add future forecast to SAME graph
 
-    st.plotly_chart(fig, use_container_width=True, config={'responsive': True})
+    st.plotly_chart(fig, use_container_width=True)
 
     st.subheader(f"{best_model} Forecast for Store {store}")
     st.info("📌 Note: Negative demand predictions are clipped to zero for business realism.")
@@ -427,7 +417,7 @@ with tab2:
             tickfont=dict(color="white" if plotly_theme == "plotly_dark" else "black")
         )
     )
-    st.plotly_chart(fig, use_container_width=True, config={'responsive': True})
+    st.plotly_chart(fig, use_container_width=True)
 
 
 # =============================
@@ -483,7 +473,7 @@ with tab3:
         )
     )
 
-    st.plotly_chart(fig, use_container_width=True, config={'responsive': True})
+    st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Future Demand Heatmap")
 
@@ -516,7 +506,7 @@ with tab3:
             )
         )
 
-        st.plotly_chart(fig, use_container_width=True, config={'responsive': True})
+        st.plotly_chart(fig, use_container_width=True)
         st.caption("Heatmap shows expected demand intensity by hour and day")
     else:
         st.warning("Not enough data for heatmap")
